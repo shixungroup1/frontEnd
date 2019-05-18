@@ -2,6 +2,9 @@
     <div id="container" ref="container">
         <!-- controls 属性规定浏览器应该为视频提供播放控件。 -->
         <video src="../../public/Videos/demo.mp4" id="video" alt="" ref="video" controls/>
+        <!-- 发送弹幕模块 -->
+        <el-input v-model="input" placeholder="请输入内容"></el-input>
+        <el-button type="primary" round @click="sendBarrage">发送</el-button>
     </div>
 </template>
 
@@ -16,7 +19,8 @@ export default {
             container: this.$refs.container,
             video: this.$refs.video,
             vCanvas: null,
-            vContext: null
+            vContext: null,
+            input: "样例弹幕"
 
         }
     },
@@ -27,6 +31,7 @@ export default {
         this.barrage.canvas.height = this.container.clientHeight - 80;
         // 装载弹幕数据
         this.barrage.setData(data);
+        // this.barrage.setData();
         this.getVideoFrame();
         this.computeMask();
         this.bindVideoBarrage();
@@ -43,7 +48,6 @@ export default {
 
             // 将视频绘制到canvas
             this.barrage.afterRender = () => {
-                console.log(this)
                 this.vContext.drawImage(this.video, 0, 0, this.vCanvas.width, this.vCanvas.height);
             }
         },
@@ -64,9 +68,7 @@ export default {
                     if(r > 15 || g > 15 || b > 15) {
                         frame.data[4*i + 3] = 0;
                     }
-                }
-
-                
+                }                
                 // 使用蒙版
                 this.barrage.setMask(frame); 
             }
@@ -88,6 +90,15 @@ export default {
             this.video.addEventListener('seeked', () => {
                 this.barrage.goto(this.video.currentTime * 1000);
             }, false);
+        },
+        // 发送弹幕
+        sendBarrage: function() {
+            console.log("send method")
+            const result = this.barrage.add({
+                time: this.video.currentTime * 1000, // 弹幕出现的时间(单位：毫秒)
+                text: '这是新增的一条弹幕'
+            });
+            console.log(result)
         }
 
     }
