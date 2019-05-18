@@ -1,6 +1,7 @@
 <template>
   <el-tabs v-model="currentTab">
     <el-tab-pane v-for="tab in tabs" :key="tab.id" :label="tab.label">
+      <!-- <tab-barrage></tab-barrage> -->
       <component :is="currentTabComponent"> </component>
     </el-tab-pane>
   </el-tabs>
@@ -36,6 +37,7 @@ export default {
   },
   computed: {
     currentTabComponent: function() {
+      console.log("currentTabComponent")
       return 'tab-' + this.tabs[this.currentTab].name.toLowerCase()
     }
   },
