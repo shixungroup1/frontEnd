@@ -2,16 +2,23 @@
     <div>
         <h2>图像弹幕</h2>
         <div id="container" ref="container" >
-            <!-- controls 属性规定浏览器应该为视频提供播放控件。 -->
             <img src="../../../public/Imgs/origin.jpg" id="oriImg" ref="oriImg" @load="loadImage"/>
-            
         </div>
         <img src="../../../public/Imgs/mask.png" id="mask" ref="mask" hidden/>
         <!-- 发送弹幕模块 -->
-        <el-input v-model="input" placeholder="请输入内容"></el-input>
-        <el-button type="primary" round @click="sendBarrage">发送</el-button>
+        <div class="sending" ref="sendingFrame">
+            <div class="inputFrame">
+                <el-input v-model="input" placeholder="请输入内容"></el-input>
+            </div>
+            <div class="buttonFrame">
+                <el-button type="primary" round @click="sendBarrage">发送</el-button>
+            </div>
+        </div>
         <!-- 播放演示弹幕 -->
-        <el-button type="primary" round @click="playBarrage">播放演示弹幕</el-button>
+        <div class="example">
+            <el-button type="primary" round @click="playBarrage">播放演示弹幕</el-button>
+        </div>
+        
     </div>
     
 </template>
@@ -50,6 +57,7 @@ export default {
             // 设置宽高
             this.container.style.height = this.oriImg.height +'px';
             this.container.style.width = this.oriImg.width +'px';
+            this.$refs.sendingFrame.style.width = this.oriImg.width +'px';
             console.log("container的宽和高 " + this.container.style.height + " " + this.container.style.width)
             // 设置弹幕
             this.barrage = new Barrage({container: this.container});
@@ -128,17 +136,32 @@ html, body {
   overflow: hidden; */
 }
 
-div {
-    margin: 0 auto; /*居中*/
+#container, #img {
+    width: 880px;
+    height: 540px;
+    margin: 0 auto;
 }
 
-#container {
-  margin: 0 auto;
-  /* margin-left: 50vw; */
-  /* transform: translate(-50%, -50%); */
-  background-color: red;
+.sending {
+    width: 880px;
+    margin: 0 auto;
 }
 
+.inputFrame {
+    float: left;
+    width: 85%;
+    margin-right: 5%;
+    text-align: right;
+}
 
+.buttonFrame {
+    float: right;
+    width: 10%;
+}
+
+.inputFrame, .buttonFrame {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
 
 </style>

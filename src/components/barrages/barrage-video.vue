@@ -1,13 +1,24 @@
 <template>
-    <div>
+    <div class="outline">
         <h2>视频弹幕</h2>
         <div id="container" ref="container">
             <!-- controls 属性规定浏览器应该为视频提供播放控件。 -->
             <video src="../../../public/Videos/demo.mp4" id="video" alt="" ref="video" controls/>
         </div>
         <!-- 发送弹幕模块 -->
-        <el-input v-model="input" placeholder="请输入内容"></el-input>
-        <el-button type="primary" round @click="sendBarrage">发送</el-button>
+        <div class="sending">
+            <div class="inputFrame">
+                <el-input v-model="input" placeholder="请输入内容"></el-input>
+            </div>
+            <div class="buttonFrame">
+                <el-button type="primary" round @click="sendBarrage">发送</el-button>
+            </div>
+        </div>
+        
+        <!-- 播放演示弹幕
+        <div class="example">
+            <el-button type="primary" round @click="playBarrage">播放演示弹幕</el-button>
+        </div> -->
     </div>
     
 </template>
@@ -135,15 +146,25 @@ html, body {
 #container, #video {
     width: 880px;
     height: 540px;
+    margin: 0 auto;
 }
 
-#container {
-  margin: 0 auto;
-  margin-top: 50vh;
-  margin-left: 50vw;
-  transform: translate(-50%, -50%);
-  background-color: #ddd;
+.sending {
+    width: 880px;
+    margin: 0 auto;
 }
-
-
+.inputFrame {
+    float: left;
+    width: 85%;
+    margin-right: 5%;
+    text-align: right;
+}
+.buttonFrame {
+    float: right;
+    width: 10%;
+}
+.inputFrame, .buttonFrame {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
 </style>
