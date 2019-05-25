@@ -1,11 +1,9 @@
 <template>
-  <div>
-    <el-tabs v-model="currentTab">
-      <el-tab-pane v-for="tab in tabs" :key="tab.id" :label="tab.label">
-      </el-tab-pane>
+    <el-tabs v-model="currentTab" :tab-position="tabPosition">
+        <el-tab-pane v-for="tab in tabs" :key="tab.id" :label="tab.label">
+            <component class="page" :is="currentTabComponent"></component>
+        </el-tab-pane>
     </el-tabs>
-    <component :is="currentTabComponent"> </component>
-  </div>
 </template>
 <script>
     import tabBokeh from './tab-bokeh.vue'
