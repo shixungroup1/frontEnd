@@ -1,10 +1,11 @@
 <template>
   <div>
-    <el-tabs v-model="currentTab">
+    <el-tabs v-model="currentTab" :tab-position="tabPosition">
       <el-tab-pane v-for="tab in tabs" :key="tab.id" :label="tab.label">
       </el-tab-pane>
+      <component :is="currentTabComponent"> </component>
     </el-tabs>
-    <component :is="currentTabComponent"> </component>
+    
   </div>
 </template>
 <script>

@@ -26,7 +26,6 @@
 <script>
 import Barrage from 'barrage-ui';
 import data from '../../plugins/utils/mockData.js';
-
 export default {
     name: "tabBarrage",
     data() {
@@ -69,7 +68,6 @@ export default {
             this.barrage.play();
             // this.handleImgBarrage();
         },
-
         // 获取图像
         getImages: function() {
             this.vCanvas = document.createElement('canvas');
@@ -135,33 +133,27 @@ html, body {
   background: #eee;
   overflow: hidden; */
 }
-
 #container, #img {
     width: 880px;
     height: 540px;
     margin: 0 auto;
 }
-
 .sending {
     width: 880px;
     margin: 0 auto;
 }
-
 .inputFrame {
     float: left;
     width: 85%;
     margin-right: 5%;
     text-align: right;
 }
-
 .buttonFrame {
     float: right;
     width: 10%;
 }
-
 .inputFrame, .buttonFrame {
     margin-top: 10px;
     margin-bottom: 10px;
 }
-
 </style>

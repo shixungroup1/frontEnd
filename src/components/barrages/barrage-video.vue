@@ -26,7 +26,6 @@
 <script>
 import Barrage from 'barrage-ui';
 import data from '../../plugins/utils/mockData.js';
-
 export default {
     name: "tabBarrage",
     data() {
@@ -36,7 +35,6 @@ export default {
             vCanvas: null,
             vContext: null,
             input: "样例弹幕"
-
         }
     },
     mounted() {
@@ -61,7 +59,6 @@ export default {
             this.vCanvas.width = this.video.clientWidth;
             this.vCanvas.height = this.video.clientHeight;
             this.vContext = this.vCanvas.getContext('2d');
-
             // 将视频绘制到canvas
             this.barrage.afterRender = () => {
                 this.vContext.drawImage(this.video, 0, 0, this.vCanvas.width, this.vCanvas.height);
@@ -96,12 +93,10 @@ export default {
             this.video.addEventListener('play', () => {
                 this.barrage.play();
             }, false);
-
             // 暂停事件
             this.video.addEventListener('pause', () => {
                 this.barrage.pause();
             }, false);
-
             // 切换播放进度
             this.video.addEventListener('seeked', () => {
                 this.barrage.goto(this.video.currentTime * 1000);
@@ -122,12 +117,9 @@ export default {
             }
         },
         // 处理图片
-
         handleImgBarrage: function() {
-
         },
         computeImgMask: function() {
-
         }
     }
 }
@@ -142,13 +134,11 @@ html, body {
   background: #eee;
   overflow: hidden;
 }
-
 #container, #video {
     width: 880px;
     height: 540px;
     margin: 0 auto;
 }
-
 .sending {
     width: 880px;
     margin: 0 auto;
