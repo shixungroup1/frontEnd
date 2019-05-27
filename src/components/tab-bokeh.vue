@@ -60,6 +60,9 @@
             }
 
         },
+        created: function () {
+            console.log("created",this.fileList)
+        },
         methods: {
             async getImage() {
                 let data={};

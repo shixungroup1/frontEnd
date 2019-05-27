@@ -3,9 +3,9 @@
     <el-tabs v-model="currentTab" :tab-position="tabPosition">
       <el-tab-pane v-for="tab in tabs" :key="tab.id" :label="tab.label">
       </el-tab-pane>
-      <component :is="currentTabComponent"> </component>
+      <component class="page" :is="currentTabComponent"> </component>
     </el-tabs>
-    
+
   </div>
 </template>
 <script>
@@ -25,7 +25,7 @@
                         name: "sa",
                         label: "显著性分析",
                         isActive: false
-                    }, 
+                    },
                     {
                         id: 0,
                         name: "bokeh",
