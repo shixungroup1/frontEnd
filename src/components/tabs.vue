@@ -11,7 +11,7 @@
     import tabBokeh from './tab-bokeh.vue'
     import tabCutout from './tab-cutout.vue'
     import tabBarrage from './tab-barrage.vue'
-
+    import tabSA from './tab-sa.vue'
     export default {
         name: "tabs",
         data() {
@@ -19,6 +19,12 @@
                 currentTab: 0,
                 tabPosition: 'left',
                 tabs: [
+                    {
+                        id: 4,
+                        name: "sa",
+                        label: "显著性分析",
+                        isActive: false
+                    }, 
                     {
                         id: 0,
                         name: "bokeh",
@@ -46,7 +52,8 @@
         components: {
             "tab-bokeh": tabBokeh,
             "tab-cutout": tabCutout,
-            "tab-barrage": tabBarrage
+            "tab-barrage": tabBarrage,
+            "tab-sa": tabSA
         }
     };
 
