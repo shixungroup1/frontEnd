@@ -14,10 +14,11 @@
         <el-upload
                 class="upload-demo"
                 ref="upload"
-                action="https://jsonplaceholder.typicode.com/posts/"
+                action="http://172.18.167.9:9000/upload_image"
                 :on-preview="handlePreview"
                 :on-remove="handleRemove"
                 :file-list="fileList"
+                :on-success="handleSuccess"
                 list-type="picture-card"
                 :auto-upload="false">
             <i class="el-icon-plus"></i>
@@ -28,7 +29,7 @@
         <div slot="tip" class="margin el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
 
         <div>
-            <el-button size="small" type="primary">下载图片</el-button>
+            <el-button size="small" type="primary" @click="getImage">下载图片</el-button>
         </div>
 
         <div>
@@ -54,7 +55,7 @@
                     {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}
                 ],
                 url: "",
-                url1:"",
+                url1:"http://172.18.167.9:9000/download/2019052515555794.jpeg",
                 fitMethod: 'contain'
             }
 
@@ -62,7 +63,7 @@
         methods: {
             async getImage() {
                 let data={};
-                let res = await get('/get',data);
+                let res = await get('/download/2019052515555794.jpeg');
                 console.log(res)
             },
             submitUpload() {
@@ -72,8 +73,11 @@
                 console.log(file, fileList);
             },
             handlePreview(file) {
-                console.log(file);
+                console.log("preview", file);
                 this.url=file.url;
+            },
+            handleSuccess(response, file, fileList) {
+                console.log(response)
             }
         }
 
