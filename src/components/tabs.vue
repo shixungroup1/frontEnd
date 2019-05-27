@@ -1,15 +1,18 @@
 <template>
+  <div>
     <el-tabs v-model="currentTab" :tab-position="tabPosition">
-        <el-tab-pane v-for="tab in tabs" :key="tab.id" :label="tab.label">
-            <component class="page" :is="currentTabComponent"></component>
-        </el-tab-pane>
+      <el-tab-pane v-for="tab in tabs" :key="tab.id" :label="tab.label">
+      </el-tab-pane>
+      <component :is="currentTabComponent"> </component>
     </el-tabs>
+    
+  </div>
 </template>
 <script>
     import tabBokeh from './tab-bokeh.vue'
     import tabCutout from './tab-cutout.vue'
     import tabBarrage from './tab-barrage.vue'
-
+    import tabSA from './tab-sa.vue'
     export default {
         name: "tabs",
         data() {
@@ -17,6 +20,12 @@
                 currentTab: 0,
                 tabPosition: 'left',
                 tabs: [
+                    {
+                        id: 4,
+                        name: "sa",
+                        label: "显著性分析",
+                        isActive: false
+                    }, 
                     {
                         id: 0,
                         name: "bokeh",
@@ -44,7 +53,8 @@
         components: {
             "tab-bokeh": tabBokeh,
             "tab-cutout": tabCutout,
-            "tab-barrage": tabBarrage
+            "tab-barrage": tabBarrage,
+            "tab-sa": tabSA
         }
     };
 
