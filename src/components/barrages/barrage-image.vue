@@ -1,11 +1,11 @@
 <template>
-    <div>
+    <div class="outline">
         <h2>图像弹幕</h2>
         <div id="container" ref="container" >
             <img :src="currentImg" id="oriImg" ref="oriImg" @load="loadImage"/>
         </div>
         <!-- 蒙版 -->
-        <img :src="currentMask" id="mask" ref="mask" @load="loadMask" hidden/>
+        <img :src="currentMask" id="mask" ref="mask" hidden/>
         <!-- 发送弹幕模块 -->
         <div class="sending" ref="sendingFrame">
             <div class="inputFrame">
@@ -17,7 +17,7 @@
         </div>
         <!-- 播放演示弹幕 -->
         <div class="example">
-            <el-button type="primary" round @click="playBarrage">播放演示弹幕</el-button>
+            <el-button type="primary" round @click="playBarrage">重播演示弹幕</el-button>
         </div>
         <!-- 选择图片 -->
         <div>
@@ -105,6 +105,7 @@ export default {
         this.currentTime = this.time.getTime();
         // 初始化默认图片
         this.currentImg = require("./origin.jpg");
+        this.currentMask = require("../../../public/Masks/mask.png");
         this.container = this.$refs.container;
         
         
@@ -129,12 +130,8 @@ export default {
             this.barrage.canvas.height = this.oriImg.height;
             this.getImages();
             this.computeImgMask();
-            this.barrage.replay();
+            this.barrage.play();
             // this.handleImgBarrage();
-        },
-        loadMask: function() {
-            console.log("---loadMask---")
-            this.finishLoadingMask = true;
         },
         // 获取图像
         getImages: function() {
@@ -142,11 +139,6 @@ export default {
             this.vCanvas.width = this.oriImg.width;
             this.vCanvas.height = this.oriImg.height;
             this.vContext = this.vCanvas.getContext('2d');
-            console.log(this.finishLoadingMask);
-            console.log(this.finishLoadingImg);
-            // while(!this.finishLoadingMask) {
-
-            // }
             this.barrage.afterRender = () => {
                 this.vContext.drawImage(this.mask, 0, 0, this.oriImg.width, this.oriImg.height);
             }
@@ -180,20 +172,17 @@ export default {
         // 发送弹幕
         sendBarrage: function() {
             this.time = new Date();
-            console.log(this.time.getTime() - this.currentTime)
             const success = this.barrage.add({
                 time: this.time.getTime() - this.currentTime, // 弹幕出现的时间(单位：毫秒)
                 text: this.input
             });
             if(success) {
                 this.input=""
-                console.log("弹幕发送成功")
                 this.$message({
                     type: 'info',
                     message: `弹幕发送成功`
                 });
             } else {
-                console.log("弹幕发送失败") 
                 // 弹窗提示失败
                 this.$message({
                     type: 'info',
@@ -205,9 +194,12 @@ export default {
         async getImage() {
             let data={};
             let res = await get('/get',data);
+            console.log("getImage")
             console.log(res)
+
         },
         submitUpload() {
+            console.log("submitUpload")
             this.$refs.upload.submit();
         },
         handleRemove(file, imgList) {
@@ -220,8 +212,11 @@ export default {
             this.barrage.setData([]);
             // 更新图片
             this.currentImg=file.url;
-            // TODO: 从后端拿到mask的图片
-            // file.maskUrl = require();
+            
+            if(file.maskUrl === undefined) {
+                // TODO: 从后端拿到mask的图片
+                file.maskUrl = require("../../../public/Masks/mask.png");
+            }
             this.currentMask = file.maskUrl;
 
         }
@@ -233,23 +228,23 @@ export default {
 <style scoped>
 html, body {
   /* font: 14px/18px Helvetica, Arial, 'Microsoft Yahei', Verdana, sans-serif; */
-  width: 100%;
+  width: 600px;
   margin: 0;
   /* padding: 0;
   background: #eee;
   overflow: hidden; */
 }
 #container {
-    width: 880px;
+    width: 700px;
     height: 540px;
     margin: 0 auto;
 }
 img {
-    max-width: 800px;
-    height: auto;
+    height: 500px;
+    width: auto;
 }
 .sending {
-    width: 880px;
+    width: 700px;
     margin: 0 auto;
 }
 .inputFrame {
