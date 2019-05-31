@@ -17,7 +17,7 @@
         name: "tabs",
         data() {
             return {
-                currentTab: 0,
+                currentTab: "3",
                 tabPosition: 'left',
                 tabs: [
                     {
