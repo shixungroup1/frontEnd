@@ -38,7 +38,6 @@ export default {
         }
     },
     mounted() {
-        console.log("-------------mounted in video-------------");
         this.container = this.$refs.container;
         
         this.barrage = new Barrage({container: this.container});
