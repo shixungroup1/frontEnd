@@ -14,10 +14,11 @@
         <el-upload
                 class="upload-demo"
                 ref="upload"
-                action="https://jsonplaceholder.typicode.com/posts/"
+                action="http://172.18.167.9:9000/upload_image"
                 :on-preview="handlePreview"
                 :on-remove="handleRemove"
                 :file-list="fileList"
+                :on-success="handleSuccess"
                 list-type="picture-card"
                 :auto-upload="false">
             <i class="el-icon-plus"></i>
@@ -25,10 +26,14 @@
         <div>
             <el-button size="small" type="success" @click="submitUpload">上传到服务器</el-button>
         </div>
-        <div slot="tip" class="margin el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+        <div class="margin">
+            <el-input v-model="inputUrl" placeholder="请输入内容">
+                <el-button slot="append" @click="addUrl">添加链接</el-button>
+            </el-input>
+        </div>
 
         <div>
-            <el-button size="small" type="primary">下载图片</el-button>
+            <el-button size="small" type="primary" @click="getImage">下载图片</el-button>
         </div>
 
         <div>
@@ -44,36 +49,62 @@
 </template>
 
 <script>
-    import {get, post} from '../libs/http';
+    import {get, post, del} from '../libs/http';
     export default {
         name: "tabCutout",
         data() {
             return{
-                fileList: [
-                    {name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'},
-                    {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}
-                ],
+                fileList: [],
+                baseUrl: 'http://172.18.167.9:9000/upload_image',
                 url: "",
                 url1:"",
-                fitMethod: 'contain'
+                fitMethod: 'contain',
+                inputUrl: ''
             }
+
+        },
+        created: async function () {
+            let res = await get('/list_images');
+            let form = res.data.data;
+            form.forEach((item)=>{
+                let temp = item.split('/');
+                let name = temp[temp.length-1];
+                this.fileList.push({name:name, url:item});
+            })
 
         },
         methods: {
             async getImage() {
-                let data={};
-                let res = await get('/get',data);
-                console.log(res)
+                this.url1="";
+                let temp=this.url.split('/');
+                let name=temp[temp.length-1];
+                this.url1="http://172.18.167.9:9000/process_cutout/"+name;
+                console.log(this.url1)
+                //let res = await get('/process/'+name);
+                //console.log(res);
             },
             submitUpload() {
                 this.$refs.upload.submit();
             },
-            handleRemove(file, fileList) {
-                console.log(file, fileList);
+            async handleRemove(file, fileList) {
+                console.log(file)
+                let temp=file.url.split('/');
+                let name=temp[temp.length-1];
+                let res = await del('/delete/'+name);
+                console.log(res)
             },
             handlePreview(file) {
-                console.log(file);
+                console.log("preview", file);
                 this.url=file.url;
+            },
+            handleSuccess(response, file, fileList) {
+                console.log(response)
+            },
+            async addUrl() {
+                let data={url:this.inputUrl};
+                let res = await post("/upload_image", data);
+                console.log(res);
+                this.fileList.push(data);
             }
         }
 
