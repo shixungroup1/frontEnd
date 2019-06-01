@@ -26,7 +26,11 @@
         <div>
             <el-button size="small" type="success" @click="submitUpload">上传到服务器</el-button>
         </div>
-        <div slot="tip" class="margin el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+        <div class="margin">
+            <el-input v-model="inputUrl" placeholder="请输入内容">
+                <el-button slot="append" @click="addUrl">添加链接</el-button>
+            </el-input>
+        </div>
 
         <div>
             <el-button size="small" type="primary" @click="getImage">下载图片</el-button>
@@ -47,27 +51,34 @@
 <script>
     import {get, post} from '../libs/http';
     export default {
-        name: "tabCutout",
+        name: "tabBokeh",
         data() {
             return{
                 fileList: [
                     {name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'},
                     {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}
                 ],
+                baseUrl: 'http://172.18.167.9:9000/upload_image',
                 url: "",
                 url1:"http://172.18.167.9:9000/download/2019052515555794.jpeg",
-                fitMethod: 'contain'
+                fitMethod: 'contain',
+                inputUrl: ''
             }
 
         },
-        created: function () {
-            console.log("created",this.fileList)
+        created: async function () {
+            let res = await get('/list_images');
+            let form = res.data.data;
+            form.forEach((item)=>{
+                let temp = item.split('/');
+                let name = temp[temp.length-1];
+                this.fileList.push({name:name, url:item});
+            })
+
         },
         methods: {
             async getImage() {
-                let data={};
-                let res = await get('/download/2019052515555794.jpeg');
-                console.log(res)
+
             },
             submitUpload() {
                 this.$refs.upload.submit();
@@ -81,6 +92,12 @@
             },
             handleSuccess(response, file, fileList) {
                 console.log(response)
+            },
+            async addUrl() {
+                let data={url:this.inputUrl};
+                let res = await post("/upload_image", data);
+                console.log(res);
+                this.fileList.push(data);
             }
         }
 
