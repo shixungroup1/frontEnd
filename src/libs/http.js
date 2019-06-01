@@ -21,6 +21,24 @@ export function get (url, data) {
 }
 
 /**
+ * 封装delete方法
+ * @param url
+ * @param data
+ * @returns {Promise}
+ */
+
+export function del (url, data) {
+    return new Promise((resolve, reject) => {
+        axios.delete(url, {params: data})
+            .then(response => {
+                resolve(response);
+            }).catch(err => {
+            reject(err);
+        });
+    });
+}
+
+/**
  * 封装post请求
  * @param url
  * @param data
