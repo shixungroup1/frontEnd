@@ -20,7 +20,7 @@ export default {
     name: "tabBarrage",
     data() {
         return {
-            option: "video"
+            option: "image"
         }
     },
     computed: {
