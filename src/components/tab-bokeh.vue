@@ -10,6 +10,9 @@
 
                 </div>
             </el-image>
+            <!-- test -->    
+            <!-- 蒙版 -->
+            <img id="mask" ref="mask" hidden/>
         </div>
         <el-upload
                 class="upload-demo"
@@ -73,6 +76,9 @@
             })
 
         },
+        mounted() {
+            console.log("bokeh mounted");
+        },
         methods: {
             async getImage() {
                 this.url1="";
@@ -94,7 +100,7 @@
                 console.log(res)
             },
             handlePreview(file) {
-                console.log("preview", file);
+                console.log("preview", file.url);
                 this.url=file.url;
             },
             handleSuccess(response, file, fileList) {
