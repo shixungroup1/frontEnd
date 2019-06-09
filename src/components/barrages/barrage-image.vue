@@ -21,17 +21,15 @@
         </div>
         <!-- 选择图片 -->
         <div>
-            <div>
-                
-            </div>
             <!-- 选择上传 -->
             <el-upload
                 class="upload-demo"
                 ref="upload"
-                action="https://jsonplaceholder.typicode.com/posts/"
+                action="http://172.18.167.9:9000/upload_image"
                 :on-preview="handlePreview"
                 :on-remove="handleRemove"
                 :file-list="imgList"
+                :on-success="handleSuccess"
                 list-type="picture-card"
                 :auto-upload="false">
                 <i class="el-icon-plus"></i>
@@ -39,10 +37,13 @@
             <div>
                 <el-button size="small" type="success" @click="submitUpload">上传到服务器</el-button>
             </div>
-            <div slot="tip" class="margin el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
-
+            <div class="margin">
+                <el-input v-model="inputUrl" placeholder="请输入内容">
+                    <el-button slot="append" @click="addUrl">添加链接</el-button>
+                </el-input>
+            </div>
             <div>
-                <el-button size="small" type="primary">下载图片</el-button>
+                <el-button size="small" type="primary" @click="getImage">下载图片</el-button>
             </div>
 
             <div>
@@ -63,6 +64,7 @@
 
 import Barrage from 'barrage-ui';
 import data from '../../plugins/utils/mockData.js';
+import {get, post, del} from '../../libs/http';
 export default {
     name: "tabBarrage",
     data() {
@@ -79,39 +81,40 @@ export default {
             time: null,
             // 选择图片相关
             imgList: [
-                {
-                    name: 'bird.jpg',
-                    url: require('./origin.jpg'),
-                    maskUrl: require('../../../public/Masks/mask.png')
-                    
-                },
-                {
-                    name: 'cake.jpg',
-                    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100',
-                    maskUrl: require('../../../public/Masks/mask2.jpg')
-                }
+                // {
+                    // name: 'bird.png',
+                    // url: require('./origin.jpg')
+                // }
             ],
-            currentImg: "./origin.jpg",
+            currentImg: "",
             currentMask: "../../../public/Masks/mask.png",
             url1:"",
             fitMethod: 'crop',
-            finishLoadingMask: false,
-            finishLoadingImg: false
+            inputUrl: ""
         }
+    },
+    // 从后端加载图像列表
+    created: async function () {
+        let res = await get('/list_images');
+        let form = res.data.data;
+        form.forEach((item)=>{
+            let temp = item.split('/');
+            let name = temp[temp.length-1];
+            this.imgList.push({name:name, url:item});
+        })
     },
     mounted() {
         // 处理时间，用于控制弹幕播放进度
         this.time = new Date();
         this.currentTime = this.time.getTime();
         // 初始化默认图片
-        this.currentImg = require("./origin.jpg");
+        this.currentImg = "";
         this.currentMask = require("../../../public/Masks/mask.png");
         this.container = this.$refs.container;
-        
-        
     },
     methods: {
         loadImage: function () {
+            // console.log("load img");
             this.finishLoadingImg = true;
             this.oriImg = this.$refs.oriImg;
             // console.log("origin Image 的宽和高 " + this.oriImg.height + " " + this.oriImg.width)
@@ -124,14 +127,13 @@ export default {
             // console.log("container的宽和高 " + this.container.style.height + " " + this.container.style.width)
             // 设置弹幕
             this.barrage = new Barrage({container: this.container});
-        
+
             // 装载弹幕数据
             this.barrage.setData(data);
             this.barrage.canvas.height = this.oriImg.height;
             this.getImages();
             this.computeImgMask();
             this.barrage.play();
-            // this.handleImgBarrage();
         },
         // 获取图像
         getImages: function() {
@@ -140,8 +142,12 @@ export default {
             this.vCanvas.height = this.oriImg.height;
             this.vContext = this.vCanvas.getContext('2d');
             this.barrage.afterRender = () => {
-                this.vContext.drawImage(this.mask, 0, 0, this.oriImg.width, this.oriImg.height);
+                var that = this;
+                this.$refs.mask.onload = function () {
+                    that.vContext.drawImage(that.mask, 0, 0, that.oriImg.width, that.oriImg.height);
+                };
             }
+                
         },
         // 计算蒙版，即哪些地方需要透明
         computeImgMask: function() {
@@ -192,33 +198,47 @@ export default {
         },
         // 图像上传处理
         async getImage() {
-            let data={};
-            let res = await get('/get',data);
-            console.log("getImage")
-            console.log(res)
+            this.url1=""; // 图片列表最后一张图片
+            let tmp = this.url.split('/'); // 从服务端获得图片信息
+            let name = tmp[tmp.length - 1];
+            this.url1 = "http://172.18.167.9:9000/process_bokeh/"+name;
+            console.log(this.url1)
 
+        },
+        handleSuccess(response, file, fileList) {
+            console.log(response)
         },
         submitUpload() {
-            console.log("submitUpload")
             this.$refs.upload.submit();
         },
-        handleRemove(file, imgList) {
-            console.log(file, imgList);
+        async handleRemove(file, imgList) {
+            let temp=file.url.split('/');
+            let name=temp[temp.length-1];
+            let res = await del('/delete/'+name);
+            console.log(res)
         },
         handlePreview(file) {
-            console.log("handlePreview");
-            console.log(file);
             // 清除弹幕
-            this.barrage.setData([]);
             // 更新图片
+            console.log(file.url);
             this.currentImg=file.url;
-            
-            if(file.maskUrl === undefined) {
-                // TODO: 从后端拿到mask的图片
-                file.maskUrl = require("../../../public/Masks/mask.png");
-            }
+            // TODO: 希望以file.name + mask的形式存储在后端
+            file.maskUrl = "http://172.18.167.9:9000/process_bokeh/"+file.name;
+            this.$refs.mask.crossOrigin = '';
             this.currentMask = file.maskUrl;
-
+            // console.log(this.currentMask);
+            if(this.barrage !== undefined) {
+                this.barrage.setData([]);
+            
+            }
+            // this.loadImage();
+            
+        }, 
+        async addUrl() {
+            let data={url:this.inputUrl};
+            let res = await post("/upload_image", data);
+            console.log(res);
+            this.imgList.push(data);
         }
 
     }
