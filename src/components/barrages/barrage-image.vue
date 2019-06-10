@@ -2,9 +2,11 @@
     <div class="outline">
         <h2>图像弹幕</h2>
         <!-- 原图 -->
-        <div id="container" ref="container" >
-            <img :src="currentImg" id="oriImg" ref="oriImg" @load="loadImage"/>
+        <div class="container" ref="container" >
+          
         </div>
+        <img :src="currentImg" id="oriImg" ref="oriImg" @load="loadImage"/>
+        
         <!-- 蒙版 -->
         <img :src="currentMask" id="mask" ref="mask" hidden/>
         <!-- 发送弹幕模块 -->
@@ -23,7 +25,7 @@
        
        
         <!-- 选择图片 -->
-        <div>
+        <div class="imgSelection"> 
             <!-- 选择上传 -->
             <el-upload
                 class="upload-demo"
@@ -238,22 +240,34 @@ export default {
 </script>
 
 <style scoped>
+/* title */
 h2 {
     text-align: center;
 }
 .outline {
     margin-left:50px;
     margin-right:50px;
+    text-align: center;
 }
-#container {
-    width: 900px;
+
+/* image display */
+
+.container, #oriImg {
+    display: block; 
     height: 540px;
-    margin: 0 auto;
+    width: auto; 
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    margin-right: -50%;
+    /* float: top; */
+    /* width: auto; */
 }
-img {
-    height: 500px;
-    width: auto;
+
+#oriImg {
+    z-index: -1;
 }
+/* barrage */
 .sending {
     width: 700px;
     margin: 0 auto;
@@ -272,15 +286,14 @@ img {
     margin-top: 10px;
     margin-bottom: 10px;
 }
-.img {
-    width: 400px;
-    height: 302px;
-    overflow: hidden;
-    margin: 10px;
-}
 .replayButton {
     margin: 0 auto;
     text-align: center;
+}
+
+/* image selection */
+.imgSelection {
+    margin: 5%;
 }
 /* .im-slot {
     text-align: center;
