@@ -20,7 +20,6 @@
             <img id="mask" ref="mask" hidden/>
         </div>
         <el-upload
-                style="max-width: 936px;"
                 class="upload-demo"
                 ref="upload"
                 action="http://172.18.167.9:9000/upload_image"
@@ -113,18 +112,19 @@
 
 <style scoped>
     .img {
-        width: 500px;
-        height: 302px;
+        width: 600px;
+        height: 402px;
         overflow: hidden;
-        margin: 10px;
+        margin: 50px 10px;
     }
     .im-slot {
         text-align: center;
-        line-height: 300px;
+        line-height: 400px;
         border: 1px dashed #c0ccda;
         border-radius: 6px;
     }
     .margin {
         margin: 10px;
+        width: 500px;
     }
 </style>
