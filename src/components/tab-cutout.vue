@@ -1,6 +1,5 @@
 <template>
     <div>
-        <p>This is Cutout</p>
         <div>
             <el-image :src="url" class="img" :fit="fitMethod">
                 <div slot="error">
