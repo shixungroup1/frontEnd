@@ -3,20 +3,19 @@
     <el-tabs v-model="currentTab" :tab-position="tabPosition" class="page">
       <!-- <el-tab-pane v-for="tab in tabs" :key="tab.id" :label="tab.label">
       </el-tab-pane> -->
-      <el-tab-pane label="分析结果"> 分析结果
-          <tab-sa/>
+      <el-tab-pane label="分析结果" >
+          <tab-sa class="page"/>
       </el-tab-pane>
 
-      <el-tab-pane label="抠图"> 抠图
-          <tab-cutout/>
+      <el-tab-pane label="抠图">
+          <tab-cutout class="page"/>
       </el-tab-pane>
 
-      <el-tab-pane label="虚化"> 虚化
-          <tab-bokeh/>
+      <el-tab-pane label="虚化">
+          <tab-bokeh class="page"/>
       </el-tab-pane>
-
-      <el-tab-pane label="弹幕"> 
-          <tab-barrage/>
+      <el-tab-pane label="弹幕">
+          <tab-barrage class="page"/>
       </el-tab-pane>
       <!-- <component class="page" :is="currentTabComponent"> </component> -->
     </el-tabs>
@@ -32,7 +31,7 @@
         name: "tabs",
         data() {
             return {
-                currentTab: "1",
+                currentTab: "0",
                 tabPosition: 'top',
                 tabs: [
                     {
