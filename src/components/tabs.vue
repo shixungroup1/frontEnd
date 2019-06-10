@@ -14,7 +14,6 @@
       <el-tab-pane label="虚化">
           <tab-bokeh class="page"/>
       </el-tab-pane>
-
       <el-tab-pane label="弹幕">
           <tab-barrage class="page"/>
       </el-tab-pane>
