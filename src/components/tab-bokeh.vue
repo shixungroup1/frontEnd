@@ -1,17 +1,14 @@
 <template>
     <div>
-        <p>This is Bokeh</p>
+        <!-- <p>This is Bokeh</p> -->
         <div>
             <el-image :src="url" class="img" :fit="fitMethod">
                 <div slot="error">
                     <div class="im-slot">
                         <span>请选择一张图片</span>
                     </div>
-
                 </div>
             </el-image>
-            <!-- test -->    
-            <!-- 蒙版 -->
             <img id="mask" ref="mask" hidden/>
         </div>
         <el-upload

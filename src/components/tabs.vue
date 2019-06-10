@@ -15,7 +15,7 @@
           <tab-bokeh/>
       </el-tab-pane>
 
-      <el-tab-pane label="弹幕"> 弹幕
+      <el-tab-pane label="弹幕"> 
           <tab-barrage/>
       </el-tab-pane>
       <!-- <component class="page" :is="currentTabComponent"> </component> -->
