@@ -2,11 +2,21 @@
     <div class="outline">
         <h2>图像弹幕</h2>
         <!-- 原图 -->
-        <div id="container" ref="container" >
-            <img :src="currentImg" id="oriImg" ref="oriImg" @load="loadImage"/>
+        <div class="container" ref="container" > 
+            <el-image :src="url" class="img" :fit="fitMethod" v-if="currentImg === ''">
+                <div slot="error">
+                    <div class="im-slot">
+                        <span>请选择一张图片</span>
+                    </div>
+                </div>
+            </el-image>
+            
         </div>
+        <img :src="currentImg" id="oriImg" ref="oriImg" @load="loadImage"/>
+        
         <!-- 蒙版 -->
         <img :src="currentMask" id="mask" ref="mask" hidden/>
+        
         <!-- 发送弹幕模块 -->
         <div class="sending">
             <div class="inputFrame">
@@ -23,7 +33,7 @@
        
        
         <!-- 选择图片 -->
-        <div>
+        <div class="imgSelection"> 
             <!-- 选择上传 -->
             <el-upload
                 class="upload-demo"
@@ -66,6 +76,7 @@ export default {
             width: 0,
             currentTime: null,
             time: null,
+            url: "",
             // 选择图片相关
             imgList: [
                 // {
@@ -96,7 +107,7 @@ export default {
         this.currentTime = this.time.getTime();
         // 初始化默认图片
         this.currentImg = "";
-        this.currentMask = require("../../../public/Masks/mask.png");
+        this.currentMask = "";
         this.container = this.$refs.container;
     },
     methods: {
@@ -238,22 +249,41 @@ export default {
 </script>
 
 <style scoped>
+/* title */
 h2 {
     text-align: center;
 }
 .outline {
-    margin-left:50px;
-    margin-right:50px;
+    /* margin-left:50px;
+    margin-right:50px; */
+    text-align: center;
 }
-#container {
-    width: 900px;
-    height: 540px;
-    margin: 0 auto;
-}
-img {
+
+/* image display */
+
+.container {
     height: 500px;
-    width: auto;
+    margin-right: auto;
+    margin-left: auto;
+     /* border: blue solid 1px; */
 }
+
+.img {
+    width: 700px;
+    visibility:visible;
+}
+
+#oriImg {
+    /* translate: -500px; */
+    display: block; 
+    height: 500px;
+    margin-top: -500px;
+    margin-right: auto;
+    margin-left: auto;
+    z-index: -1;
+    /* border: red solid 1px; */
+}
+/* barrage */
 .sending {
     width: 700px;
     margin: 0 auto;
@@ -272,20 +302,23 @@ img {
     margin-top: 10px;
     margin-bottom: 10px;
 }
-.img {
-    width: 400px;
-    height: 302px;
-    overflow: hidden;
-    margin: 10px;
-}
 .replayButton {
     margin: 0 auto;
     text-align: center;
 }
-/* .im-slot {
+
+/* image selection */
+.imgSelection {
+    margin: 5%;
+}
+.margin {
+    margin: 10px;
+}
+
+.im-slot {
     text-align: center;
-    line-height: 300px;
+    line-height: 500px;
     border: 1px dashed #c0ccda;
     border-radius: 6px;
-} */
+}
 </style>
