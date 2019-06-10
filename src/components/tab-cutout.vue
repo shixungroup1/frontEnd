@@ -1,17 +1,23 @@
 <template>
     <div>
-        <p>This is Cutout</p>
         <div>
             <el-image :src="url" class="img" :fit="fitMethod">
                 <div slot="error">
                     <div class="im-slot">
                         <span>请选择一张图片</span>
                     </div>
-
+                </div>
+            </el-image>
+            <el-image :src="url1" class="img" :fit="fitMethod">
+                <div slot="error">
+                    <div class="im-slot">
+                        <span>后台处理中...</span>
+                    </div>
                 </div>
             </el-image>
         </div>
         <el-upload
+                style="max-width: 936px;"
                 class="upload-demo"
                 ref="upload"
                 action="http://172.18.167.9:9000/upload_image"
@@ -20,30 +26,13 @@
                 :file-list="fileList"
                 :on-success="handleSuccess"
                 list-type="picture-card"
-                :auto-upload="false">
+                :auto-upload="true">
             <i class="el-icon-plus"></i>
         </el-upload>
-        <div>
-            <el-button size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-        </div>
         <div class="margin">
             <el-input v-model="inputUrl" placeholder="请输入内容">
                 <el-button slot="append" @click="addUrl">添加链接</el-button>
             </el-input>
-        </div>
-
-        <div>
-            <el-button size="small" type="primary" @click="getImage">下载图片</el-button>
-        </div>
-
-        <div>
-            <el-image :src="url1" class="img" :fit="fitMethod">
-                <div slot="error">
-                    <div class="im-slot">
-                        <span>后台处理中...</span>
-                    </div>
-                </div>
-            </el-image>
         </div>
     </div>
 </template>
@@ -55,7 +44,7 @@
         data() {
             return{
                 fileList: [],
-                baseUrl: 'http://172.18.167.9:9000/upload_image',
+                baseUrl: 'http://172.18.167.9:9000',
                 url: "",
                 url1:"",
                 fitMethod: 'contain',
@@ -78,7 +67,7 @@
                 this.url1="";
                 let temp=this.url.split('/');
                 let name=temp[temp.length-1];
-                this.url1="http://172.18.167.9:9000/process_cutout/"+name;
+                this.url1=this.baseUrl+"/process_cutout/"+name;
                 console.log(this.url1)
                 //let res = await get('/process/'+name);
                 //console.log(res);
@@ -96,9 +85,14 @@
             handlePreview(file) {
                 console.log("preview", file);
                 this.url=file.url;
+                this.getImage();
             },
             handleSuccess(response, file, fileList) {
-                console.log(response)
+                fileList.forEach(item=>{
+                    if(item.uid===file.uid){
+                        item.url=this.baseUrl+'/get_image/'+response.name;
+                    }
+                })
             },
             async addUrl() {
                 let data={url:this.inputUrl};
@@ -113,7 +107,7 @@
 
 <style scoped>
     .img {
-        width: 400px;
+        width: 500px;
         height: 302px;
         overflow: hidden;
         margin: 10px;
