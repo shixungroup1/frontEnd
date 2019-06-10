@@ -1,24 +1,27 @@
 <template>
     <div class="outline">
         <h2>图像弹幕</h2>
+        <!-- 原图 -->
         <div id="container" ref="container" >
             <img :src="currentImg" id="oriImg" ref="oriImg" @load="loadImage"/>
         </div>
         <!-- 蒙版 -->
         <img :src="currentMask" id="mask" ref="mask" hidden/>
         <!-- 发送弹幕模块 -->
-        <div class="sending" ref="sendingFrame">
+        <div class="sending">
             <div class="inputFrame">
                 <el-input v-model="input" placeholder="请输入内容"></el-input>
             </div>
             <div class="buttonFrame">
                 <el-button type="primary" round @click="sendBarrage">发送</el-button>
             </div>
+            <!-- 播放演示弹幕 -->
+             <div class="replayButton">
+                <el-button type="primary" round @click="playBarrage">重播演示弹幕</el-button>
+            </div>
         </div>
-        <!-- 播放演示弹幕 -->
-        <div class="example">
-            <el-button type="primary" round @click="playBarrage">重播演示弹幕</el-button>
-        </div>
+       
+       
         <!-- 选择图片 -->
         <div>
             <!-- 选择上传 -->
@@ -31,29 +34,13 @@
                 :file-list="imgList"
                 :on-success="handleSuccess"
                 list-type="picture-card"
-                :auto-upload="false">
+                :auto-upload="true">
                 <i class="el-icon-plus"></i>
             </el-upload>
-            <div>
-                <el-button size="small" type="success" @click="submitUpload">上传到服务器</el-button>
-            </div>
             <div class="margin">
                 <el-input v-model="inputUrl" placeholder="请输入内容">
                     <el-button slot="append" @click="addUrl">添加链接</el-button>
                 </el-input>
-            </div>
-            <div>
-                <el-button size="small" type="primary" @click="getImage">下载图片</el-button>
-            </div>
-
-            <div>
-                <el-image :src="url1" class="img" :fit="fitMethod">
-                    <div slot="error">
-                        <div class="im-slot">
-                            <span>后台处理中...</span>
-                        </div>
-                    </div>
-                </el-image>
             </div>
         </div>
     </div>
@@ -123,7 +110,7 @@ export default {
             // 设置宽高
             this.container.style.height = this.oriImg.height +'px';
             this.container.style.width = this.oriImg.width +'px';
-            this.$refs.sendingFrame.style.width = this.oriImg.width +'px';
+           //  this.$refs.sendingFrame.style.width = this.oriImg.width +'px';
             // console.log("container的宽和高 " + this.container.style.height + " " + this.container.style.width)
             // 设置弹幕
             this.barrage = new Barrage({container: this.container});
@@ -206,7 +193,7 @@ export default {
 
         },
         handleSuccess(response, file, fileList) {
-            console.log(response)
+            console.log(response);
         },
         submitUpload() {
             this.$refs.upload.submit();
@@ -220,10 +207,11 @@ export default {
         handlePreview(file) {
             // 清除弹幕
             // 更新图片
-            console.log(file.url);
+            
             this.currentImg=file.url;
             // TODO: 希望以file.name + mask的形式存储在后端
-            file.maskUrl = "http://172.18.167.9:9000/process_bokeh/"+file.name;
+            file.maskUrl = "http://172.18.167.9:9000/process_barrage/"+file.name;
+            console.log(file.maskUrl);
             this.$refs.mask.crossOrigin = '';
             this.currentMask = file.maskUrl;
             // console.log(this.currentMask);
@@ -235,8 +223,12 @@ export default {
             
         }, 
         async addUrl() {
-            let data={url:this.inputUrl};
+            // this.submitUpload();
+            let tmp = this.inputUrl.split('/'); // 从服务端获得图片信息
+            let filename = tmp[tmp.length - 1];
+            let data={url:this.inputUrl, name:filename};
             let res = await post("/upload_image", data);
+           
             console.log(res);
             this.imgList.push(data);
         }
@@ -246,16 +238,15 @@ export default {
 </script>
 
 <style scoped>
-html, body {
-  /* font: 14px/18px Helvetica, Arial, 'Microsoft Yahei', Verdana, sans-serif; */
-  width: 600px;
-  margin: 0;
-  /* padding: 0;
-  background: #eee;
-  overflow: hidden; */
+h2 {
+    text-align: center;
+}
+.outline {
+    margin-left:50px;
+    margin-right:50px;
 }
 #container {
-    width: 700px;
+    width: 900px;
     height: 540px;
     margin: 0 auto;
 }
@@ -287,13 +278,14 @@ img {
     overflow: hidden;
     margin: 10px;
 }
-.im-slot {
+.replayButton {
+    margin: 0 auto;
+    text-align: center;
+}
+/* .im-slot {
     text-align: center;
     line-height: 300px;
     border: 1px dashed #c0ccda;
     border-radius: 6px;
-}
-.margin {
-    margin: 10px;
-}
+} */
 </style>
