@@ -81,7 +81,7 @@
                 this.getImage();
             },
             handleSuccess(response, file, fileList) {
-                fileList.forEach(item=>{
+                this.fileList.forEach(item=>{
                     if(item.uid===file.uid){
                         item.url=this.baseUrl+'/get_image/'+response.name;
                     }
