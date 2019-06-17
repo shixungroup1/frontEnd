@@ -106,7 +106,8 @@ export default {
             console.log(this.video.currentTime * 1000)
             const success = this.barrage.add({
                 time: this.video.currentTime * 1000, // 弹幕出现的时间(单位：毫秒)
-                text: this.input
+                text: this.input,
+                color: '#ff0000',
             });
             if(success) {
                 this.input=""

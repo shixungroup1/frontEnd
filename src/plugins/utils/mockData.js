@@ -10,7 +10,7 @@ const randomKey = () =>
     )
     .join('');
 
-const colors = ['#f00', '#0f0', '#ff0', '#fff', '#fff', '#fff', '#fff'];
+const colors = ['#0f0', '#ff0', '#fff'];
 const randomColor = () => colors[Math.floor(6 * Math.random())];
 
 const randomText = () =>
@@ -18,9 +18,9 @@ const randomText = () =>
 
 const createdStart = Date.now();
 
-const database = new Array(300).fill(null).map((d, i) => ({
+const database = new Array(500).fill(null).map((d, i) => ({
   key: randomKey(),
-  time: 500 * (i + Math.random()),
+  time: 1000 * (i + Math.random()),
   text: randomText(),
   color: randomColor(),
   createdAt: createdStart + Math.random() * 24 * 3600 * 1000,

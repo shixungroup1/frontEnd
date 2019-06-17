@@ -62,6 +62,7 @@
 import Barrage from 'barrage-ui';
 import data from '../../plugins/utils/mockData.js';
 import {get, post, del} from '../../libs/http';
+import list from '../list';
 export default {
     name: "tabBarrage",
     data() {
@@ -176,9 +177,14 @@ export default {
         // 发送弹幕
         sendBarrage: function() {
             this.time = new Date();
+            console.log("time " );
+            console.log(1000 * (Math.random()) );
+            console.log((this.time.getTime() - this.currentTime)/10);
             const success = this.barrage.add({
-                time: this.time.getTime() - this.currentTime, // 弹幕出现的时间(单位：毫秒)
-                text: this.input
+                time: this.time.getTime() - this.currentTime - 2000, // 弹幕出现的时间(单位：毫秒)
+                text: this.input,
+                fontSize: 32,
+                color: '#ff0000'
             });
             if(success) {
                 this.input=""
@@ -218,9 +224,7 @@ export default {
         handlePreview(file) {
             // 清除弹幕
             // 更新图片
-            
             this.currentImg=file.url;
-            // TODO: 希望以file.name + mask的形式存储在后端
             file.maskUrl = "http://172.18.167.9:9000/process_barrage/"+file.name;
             console.log(file.maskUrl);
             this.$refs.mask.crossOrigin = '';
