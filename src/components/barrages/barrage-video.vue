@@ -1,20 +1,21 @@
 <template>
     <div class="outline">
-        <div id="videoContainer" class="videoContainer" ref="videoContainer" >
+        <!-- <div id="videoContainer" class="videoContainer" ref="videoContainer" >
             <span id="loading" class="loading" data-percent="0" ref="loadingProcess"></span>
         </div>
-        <button @click="playVideo">play image frame</button>
+        <button @click="playVideo">play image frame</button> -->
 
         <div id="maskContainer" class="maskContainer" ref="maskContainer" >
-            <img :src="currentMask" id="mask" ref="mask" hidden/>
+            
+            <!-- <img  ref="mask"/> -->
             <!-- <span id="loading" class="loading" data-percent="0" ref="loadingProcess"></span> -->
         </div>
-        <button @click="loadMask">play image mask</button>
+        <button @click="playMask">play image mask</button>
         <hr/>
         <h2>视频弹幕</h2>
         <div id="container" ref="container">
             <!-- controls 属性规定浏览器应该为视频提供播放控件。 -->
-            <!-- <video src="../../../public/Videos/demo.mp4" id="video" alt="" ref="video" controls/> -->
+            <!--  -->
         </div>
         <!-- 发送弹幕模块 -->
         <div class="sending">
@@ -60,8 +61,11 @@ export default {
             input: "",
             
             currentMask: "", // url of mask
-            mask: this.$refs.mask
-            
+            mask: null,
+            first: true,
+
+            testMask: null,
+            globalIndex: 0
         }
     },
     mounted() {
@@ -80,20 +84,24 @@ export default {
         this.maskContainer = this.$refs.maskContainer;
         
         // init barrage
-        this.barrage = new Barrage({container: this.container});
+        this.barrage = new Barrage({container: this.maskContainer});
         this.barrage.canvas.height = this.container.clientHeight - 80;
         // 装载弹幕数据
         this.barrage.setData(data);
         // this.barrage.setData();
-
+        this.first = true;
         this.loadFrame();
+        this.loadMask();
         
-        // this.bindVideoBarrage();
+        
+        
+       
     },
     methods: {
         // 实时获取视频图像
         getVideoFrame: function() {
             // this.video = this.$refs.video;
+            console.log("getVideoFrame");
             this.vCanvas = document.createElement('canvas');
             this.vCanvas.width = 880;
             this.vCanvas.height = 540;
@@ -102,8 +110,8 @@ export default {
             // 将视频绘制到canvas
             this.barrage.afterRender = () => {
                 console.log("currentMask in afterRender");
-                console.log(that.currentMask)
-                this.vContext.drawImage(this.currentMask, 0, 0, this.vCanvas.width, this.vCanvas.height);
+                console.log(that.globalIndex);
+                this.vContext.drawImage(that.maskSequence[that.globalIndex], 0, 0, this.vCanvas.width, this.vCanvas.height);
             }
         },
         // 计算蒙版，即哪些地方需要透明
@@ -125,6 +133,7 @@ export default {
                     }
                 }                
                 // 使用蒙版
+                console.log(frame);
                 this.barrage.setMask(frame); 
                 
             }
@@ -179,7 +188,7 @@ export default {
                     img.onload=function() {
                         that.frameSequence.length++;
                         that.frameSequence[index] = this;
-                        that.playVideo();
+                        
                     };
                     img.onerror = function() {
                         console.log ("in onerror");
@@ -187,7 +196,7 @@ export default {
                         //console.log(this);
                         that.frameSequence.length++;
                         that.frameSequence[index] = this;
-                        that.playVideo();
+                        // that.playVideo();
                     };
                     if(start < 10) {
                         img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/0000" + index + ".jpg");
@@ -213,15 +222,12 @@ export default {
                 var that = this;
                 var step = function () {
                     console.log("step is called");
+                   
                     if (that.frameSequence[index - 1]) {
                         that.eleContainer.removeChild(that.frameSequence[index - 1]);
                     }
                     that.eleContainer.appendChild(that.frameSequence[index]);
                     
-                    // 获取当前帧
-                    that.getVideoFrame();
-                    // 计算蒙版
-                    that.computeFrameMask();
                     // 序列增加
                     index++;
                     // 如果超过最大限制
@@ -239,24 +245,26 @@ export default {
         },
         // mask, 事先加载到序列数组里
         loadMask: function() {
-            this.barrage.play();
             for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
                 var that = this;
                 (function (index, that) {
                     var img = document.createElement("img");
                     img.height = 450;
                     img.width = 880;
-                    img.id = "mask" + index;
                     img.onload=function() {
                         that.maskSequence.length++;
                         that.maskSequence[index] = this;
-                        that.playMask();
+                        if(that.first) {
+                            that.testMaskClick();
+                            that.first = false;
+                        }
+                        // that.playMask();
                     };
                     img.onerror = function() {
                         console.log ("in onerror");
                         that.maskSequence.length++;
                         that.maskSequence[index] = this;
-                        that.playMask();
+                        // that.playMask();
                     };
                     if(start < 10) {
                         img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/0000" + index + ".png");
@@ -267,27 +275,35 @@ export default {
             }
         },
         playMask: function() {
+            
+            //this.barrage.play();
             var percent = Math.round(100 * this.maskSequence.length / this.maxLength);
            // this.eleLoading.setAttribute('data-percent', percent);
            // this.eleLoading.style.backgroundSize = percent + '% 100%';
             // 全部加载完毕，无论成功还是失败
             if (percent == 100) {
                 var index = this.indexRange[0];
-                this.maskContainer.innerHTML = '';
+                //this.maskContainer.innerHTML = '';
                 // 依次append图片对象
                 var that = this;
                 var step = function () {
-                    if (that.maskSequence[index - 1]) {
-                        that.maskContainer.removeChild(that.maskSequence[index - 1]);
-                    }
-                    that.maskContainer.appendChild(that.maskSequence[index]);
-                    that.currentMask = that.maskSequence[index];
-                    console.log("currentMask in playMask");
-                    console.log(that.currentMask)
-                    // 获取当前帧
-                    that.getVideoFrame();
-                    // 计算蒙版
-                    that.computeFrameMask();
+                    that.globalIndex = index;
+                    // if (that.maskSequence[index - 1]) {
+                    //     that.maskContainer.removeChild(that.maskSequence[index - 1]);
+                    // }
+                    // that.maskContainer.appendChild(that.maskSequence[index]);
+                    // that.currentMask = that.maskSequence[index];
+                    // that.mask = that.maskSequence[index];
+                    // // console.log("mask");
+                    // // console.log(that.mask);
+                    // if(that.first) {
+                    //     console.log(that.first);
+                    //     that.mask = that.maskSequence[0];
+                    //     that.getVideoFrame();
+                    //     that.computeFrameMask();
+                    //     that.barrage.play();
+                    //     that.first = false;
+                    // }
                     // 序列增加
                     index++;
                     // 如果超过最大限制
@@ -297,11 +313,27 @@ export default {
                         // 本段播放结束回调
                         // 我这里就放一个重新播放的按钮
                         that.maskContainer.insertAdjacentHTML('beforeEnd', '<button onclick="playVideo()">再看一遍</button>');
+                        that.barrage.pause();
                     }
                 };
                 // 等100%动画结束后执行播放
                 setTimeout(step, 1000);
             }
+        },
+        testMaskClick: function() {
+            this.mask = this.maskSequence[0];
+            var that = this;
+            //this.mask.src=require("./00000.png");
+            // this.mask.onload = function() {
+            //     console.log("onload");
+            //     that.getVideoFrame();
+            //     that.computeFrameMask();
+            //     that.barrage.play();
+            // }
+            console.log("onload");
+            this.getVideoFrame();
+            this.computeFrameMask();
+            this.barrage.play();
         }
 
 
@@ -318,7 +350,7 @@ html, body {
   background: #eee;
   overflow: hidden;
 }
-#container, #video {
+#container, #video, .maskContainer {
     width: 880px;
     height: 540px;
     margin: 0 auto;
