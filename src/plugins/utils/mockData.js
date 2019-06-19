@@ -18,7 +18,7 @@ const randomText = () =>
 
 const createdStart = Date.now();
 
-const database = new Array(500).fill(null).map((d, i) => ({
+const database = new Array(1000).fill(null).map((d, i) => ({
   key: randomKey(),
   time: 1000 * (i + Math.random()),
   text: randomText(),

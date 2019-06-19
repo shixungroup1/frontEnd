@@ -1,15 +1,15 @@
 <template>
     <div class="outline">
-        <!-- <div id="videoContainer" class="videoContainer" ref="videoContainer" >
+        <div id="videoContainer" class="videoContainer" ref="videoContainer" >
             <span id="loading" class="loading" data-percent="0" ref="loadingProcess"></span>
         </div>
-        <button @click="playVideo">play image frame</button> -->
+        <button @click="playVideo">play image frame</button>
 
-        <div id="maskContainer" class="maskContainer" ref="maskContainer" >
+        <!-- <div id="videoContainer" class="videoContainer" ref="videoContainer" > -->
             
             <!-- <img  ref="mask"/> -->
             <!-- <span id="loading" class="loading" data-percent="0" ref="loadingProcess"></span> -->
-        </div>
+        <!-- </div> -->
         <button @click="playMask">play image mask</button>
         <hr/>
         <h2>视频弹幕</h2>
@@ -57,7 +57,7 @@ export default {
             
             // mask
             maskSequence: { length: 0 },
-            maskContainer:  this.$refs.maskContainer,
+            videoContainer:  this.$refs.videoContainer,
             input: "",
             
             currentMask: "", // url of mask
@@ -81,13 +81,14 @@ export default {
         this.eleLoading = this.$refs.loadingProcess;
         
         // init mask
-        this.maskContainer = this.$refs.maskContainer;
+        this.videoContainer = this.$refs.videoContainer;
         
         // init barrage
-        this.barrage = new Barrage({container: this.maskContainer});
+        this.barrage = new Barrage({container: this.videoContainer});
         this.barrage.canvas.height = this.container.clientHeight - 80;
         // 装载弹幕数据
         this.barrage.setData(data);
+        this.barrage.setConfig({ speed: 200 });
         // this.barrage.setData();
         this.first = true;
         this.loadFrame();
@@ -101,7 +102,6 @@ export default {
         // 实时获取视频图像
         getVideoFrame: function() {
             // this.video = this.$refs.video;
-            console.log("getVideoFrame");
             this.vCanvas = document.createElement('canvas');
             this.vCanvas.width = 880;
             this.vCanvas.height = 540;
@@ -109,8 +109,6 @@ export default {
             var that = this;
             // 将视频绘制到canvas
             this.barrage.afterRender = () => {
-                console.log("currentMask in afterRender");
-                console.log(that.globalIndex);
                 this.vContext.drawImage(that.maskSequence[that.globalIndex], 0, 0, this.vCanvas.width, this.vCanvas.height);
             }
         },
@@ -133,9 +131,7 @@ export default {
                     }
                 }                
                 // 使用蒙版
-                console.log(frame);
                 this.barrage.setMask(frame); 
-                
             }
             
         },
@@ -182,7 +178,7 @@ export default {
                 var that = this;
                 (function (index, that) {
                     var img = document.createElement("img");
-                    img.height = 450;
+                    img.height = 540;
                     img.width = 880;
                     img.id = "frame" + index;
                     img.onload=function() {
@@ -191,37 +187,30 @@ export default {
                         
                     };
                     img.onerror = function() {
-                        console.log ("in onerror");
-                        //console.log(typeof this);
-                        //console.log(this);
                         that.frameSequence.length++;
                         that.frameSequence[index] = this;
                         // that.playVideo();
                     };
                     if(start < 10) {
-                        img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/0000" + index + ".jpg");
+                        img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/0000" + index + ".png");
                     } else {
-                        img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/000" + index + ".jpg");
+                        img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/000" + index + ".png");
                     }
                 })(start, that);
             }
         },
         playVideo: function() {
-            
+            this.playMask();
             var percent = Math.round(100 * this.frameSequence.length / this.maxLength);
-            console.log("in play video func " + percent);
-            
             this.eleLoading.setAttribute('data-percent', percent);
             this.eleLoading.style.backgroundSize = percent + '% 100%';
             // 全部加载完毕，无论成功还是失败
             if (percent == 100) {
-                console.log("percent == 100");
                 var index = this.indexRange[0];
-                this.eleContainer.innerHTML = '';
+                // 
                 // 依次append图片对象
                 var that = this;
                 var step = function () {
-                    console.log("step is called");
                    
                     if (that.frameSequence[index - 1]) {
                         that.eleContainer.removeChild(that.frameSequence[index - 1]);
@@ -232,7 +221,7 @@ export default {
                     index++;
                     // 如果超过最大限制
                     if (index <= that.indexRange[1]) {
-                        setTimeout(step, 100);
+                        setTimeout(step, 1000);
                     } else {
                         // 本段播放结束回调
                         // 我这里就放一个重新播放的按钮
@@ -261,7 +250,6 @@ export default {
                         // that.playMask();
                     };
                     img.onerror = function() {
-                        console.log ("in onerror");
                         that.maskSequence.length++;
                         that.maskSequence[index] = this;
                         // that.playMask();
@@ -283,15 +271,15 @@ export default {
             // 全部加载完毕，无论成功还是失败
             if (percent == 100) {
                 var index = this.indexRange[0];
-                //this.maskContainer.innerHTML = '';
+                //this.videoContainer.innerHTML = '';
                 // 依次append图片对象
                 var that = this;
                 var step = function () {
                     that.globalIndex = index;
                     // if (that.maskSequence[index - 1]) {
-                    //     that.maskContainer.removeChild(that.maskSequence[index - 1]);
+                    //     that.videoContainer.removeChild(that.maskSequence[index - 1]);
                     // }
-                    // that.maskContainer.appendChild(that.maskSequence[index]);
+                    // that.videoContainer.appendChild(that.maskSequence[index]);
                     // that.currentMask = that.maskSequence[index];
                     // that.mask = that.maskSequence[index];
                     // // console.log("mask");
@@ -308,11 +296,11 @@ export default {
                     index++;
                     // 如果超过最大限制
                     if (index <= that.indexRange[1]) {
-                        setTimeout(step, 100);
+                        setTimeout(step, 1000);
                     } else {
                         // 本段播放结束回调
                         // 我这里就放一个重新播放的按钮
-                        that.maskContainer.insertAdjacentHTML('beforeEnd', '<button onclick="playVideo()">再看一遍</button>');
+                        that.videoContainer.insertAdjacentHTML('beforeEnd', '<button onclick="playVideo()">再看一遍</button>');
                         that.barrage.pause();
                     }
                 };
@@ -350,7 +338,7 @@ html, body {
   background: #eee;
   overflow: hidden;
 }
-#container, #video, .maskContainer {
+#container, #video, .videoContainer {
     width: 880px;
     height: 540px;
     margin: 0 auto;
