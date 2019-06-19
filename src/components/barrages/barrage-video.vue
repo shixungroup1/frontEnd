@@ -84,7 +84,11 @@ export default {
             videoName: "blackswan",
             isPlayed: false,
             finishLoadFrame: false,
-            finishLoadMask: false
+            finishLoadMask: false,
+            // sendBarrage
+            time: null,
+            currentTime: null,
+            playing: false
         }
     },
     mounted() {        
@@ -124,8 +128,10 @@ export default {
             this.barrage.afterRender = () => {
                 // console.log(that.frameSequence.length);
                 if(that.maskSequence[that.globalIndex] !== undefined) {
-                    console.log("drawImage")
+                    
                     this.vContext.drawImage(that.maskSequence[that.globalIndex], 0, 0, this.vCanvas.width, this.vCanvas.height);
+                } else {
+                    console.log("fail to drawImage")
                 }
             }
         },
@@ -169,17 +175,28 @@ export default {
         },
         // 发送弹幕
         sendBarrage: function() {
-            console.log(this.video.currentTime * 1000)
+            this.time = new Date();
+            // console.log("time " );
+            // console.log(1000 * (Math.random()) );
+            // console.log((this.time.getTime() - this.currentTime)/10);
             const success = this.barrage.add({
-                time: this.video.currentTime * 1000, // 弹幕出现的时间(单位：毫秒)
+                time: this.time.getTime() - this.currentTime - 2000, // 弹幕出现的时间(单位：毫秒)
                 text: this.input,
-                color: '#ff0000',
+                fontSize: 32,
+                color: '#ff0000'
             });
             if(success) {
                 this.input=""
-                console.log("弹幕发送成功")
+                this.$message({
+                    type: 'info',
+                    message: `弹幕发送成功`
+                });
             } else {
-                console.log("弹幕发送失败") 
+                // 弹窗提示失败
+                this.$message({
+                    type: 'info',
+                    message: `弹幕发送失败`
+                });
             }
         },
         // 处理图片
@@ -206,8 +223,16 @@ export default {
                         var percent = Math.round(100 * that.frameSequence.length / that.maxLength);
                         that.eleLoading.setAttribute('data-percent', percent);
                         that.eleLoading.style.backgroundSize = percent + '% 100%';
-                        if(index == that.indexRange[1]) {
+                        if(index > that.indexRange[0]) {
+                            
+                            that.eleContainer.appendChild(that.frameSequence[0]);
+                            
+                        }
+                        if(index === that.indexRange[1]){
                             that.finishLoadFrame = true;
+                            if(that.finishLoadMask && !that.playing) {
+                                that.playVideo();
+                            }
                         }
                     };
                     img.onerror = function() {
@@ -233,13 +258,17 @@ export default {
             }
         },
         playVideo: function() {
+            this.playing = true;
+            this.currentTime = new Date().getTime();
+            console.log(this.globalIndex);
             if(this.globalIndex === this.indexRange[1]) {
-                console.log(this.frameSequence[this.globalIndex]);
+                console.log("if playVideo has")
+                //console.log(this.frameSequence[this.globalIndex]);
                 this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
             }
             this.showLoadingBar = false;
            // this.playMask();
-            this.barrage.play();
+            this.barrage.replay();
             var percent = Math.round(100 * this.frameSequence.length / this.maxLength);
             // 全部加载完毕，无论成功还是失败
             if (percent == 100) {
@@ -262,6 +291,7 @@ export default {
                     } else {
                         that.barrage.pause();
                         that.isPlayed = true;
+                        that.playing = false;
                         // 本段播放结束回调
                         // 我这里就放一个重新播放的按钮
                         // that.eleContainer.insertAdjacentHTML('beforeEnd', '<button @click="playVideo">再看一遍</button>');
@@ -284,10 +314,14 @@ export default {
                         that.maskSequence.length++;
                         that.maskSequence[index] = this;
                         console.log("mask in loadMask");
-                        if(index == that.indexRange[1]) {
+                        if(index === that.indexRange[1]) {
                             that.finishLoadMask = true;
                             that.getVideoFrame();
                             that.computeFrameMask();
+                            if(that.finishLoadFrame && !that.playing) {
+                                that.playVideo();
+                            }
+                            
                         }
                         
                         // that.playMask();
@@ -318,46 +352,52 @@ export default {
             // })
         },
         handlePreview(file) {
-            // 清除弹幕
-            // 更新图片
-            this.first = true;
-            this.videoName=file.name;
-            if(this.eleContainer.hasChildNodes(this.frameSequence[this.globalIndex])) {
-                console.log("haschild")
+            // 处理异常
+            if(this.frameSequence.length != this.maxLength || this.videoName !== file.name &&  this.finishLoadFrame && this.finishLoadMask) {
+                this.playing = false;
+                this.finishLoadFrame = false;
+                this.finishLoadMask = false;
+                this.showLoadingBar = true;
+                this.barrage.pause(); 
+                this.barrage.goto(0); 
+                // 清除弹幕
+                // 更新图片
+                this.first = true;
+                this.videoName=file.name;
                 this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
-            }
-            
-            console.log(this.eleContainer.firstChild);
-            console.log('debug1');
-            this.frameSequence = {
-                length: 0
-            };
-            this.maskSequence = {
-                length: 0
-            }
-            console.log('debug2');
-            this.loadFrame();
-            this.loadMask();
-            this.globalIndex = 0;
-            // while(!(this.finishLoadFrame && this.finishLoadMask)) {
+                
+                console.log(this.eleContainer.firstChild);
+                console.log('debug1');
+                this.frameSequence = {
+                    length: 0
+                };
+                this.maskSequence = {
+                    length: 0
+                }
+                console.log('debug2');
+                this.loadFrame();
+                this.loadMask();
+                this.globalIndex = 0;
+                // while(!(this.finishLoadFrame && this.finishLoadMask)) {
 
-            // }
-            this.finishLoadFrame = false;
-            this.finishLoadMask = false;
-            // this.playVideo();
+                // }
+                
+                // this.playVideo();
 
-            // file.maskUrl = "http://172.18.167.9:9000/process_barrage/"+file.name;
-            // console.log(file.maskUrl);
-            // this.$refs.mask.crossOrigin = '';
-            // this.currentMask = file.maskUrl;
-            // // console.log(this.currentMask);
-            // if(this.barrage !== undefined) {
-            //     this.barrage.setData([]);
-            
-            // }
-            // this.loadImage();
-            
+                // file.maskUrl = "http://172.18.167.9:9000/process_barrage/"+file.name;
+                // console.log(file.maskUrl);
+                // this.$refs.mask.crossOrigin = '';
+                // this.currentMask = file.maskUrl;
+                // // console.log(this.currentMask);
+                // if(this.barrage !== undefined) {
+                //     this.barrage.setData([]);
+                
+                // }
+                // this.loadImage();
+                
+            }
         }
+            
 
 
     }
