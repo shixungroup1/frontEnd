@@ -4,7 +4,7 @@
         <div id="videoContainer" class="videoContainer" ref="videoContainer" >
             <span id="loading" class="loading" data-percent="0" ref="loadingProcess" v-show="showLoadingBar"></span>
         </div>
-        <button @click="playVideo">play image frame</button>
+        <el-button type="primary" round @click="playVideo">播放</el-button>
         
         <!-- 发送弹幕模块 -->
         <div class="sending">
@@ -16,9 +16,17 @@
             </div>
         </div>
         
-        <!-- 播放演示弹幕 -->
-        <div class="example">
-            <el-button type="primary" round>播放演示弹幕</el-button>
+        <!-- 选择视频 -->
+        <div class="videoSelection"> 
+            <!-- 选择上传 -->
+            <el-upload
+                class="upload-demo"
+                :on-preview="handlePreview"
+                :file-list="videoList"
+                list-type="picture-card"
+                action="http://172.18.167.9:9000/upload_image">
+                <i class="el-icon-plus"></i>
+            </el-upload>
         </div>
     </div>
     
@@ -73,6 +81,8 @@ export default {
                     // url: require('./origin.jpg')
                 // }
             ],
+            videoName: "blackswan",
+            isPlayed: false
         }
     },
     mounted() {        
@@ -197,15 +207,15 @@ export default {
                     };
                      if(that.debug) {
                         if(start < 10) {
-                            img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/0000" + index + ".png");
+                            img.src = require("./../../../public/Videos/DAVIS2016/results/" + that.videoName + "/0000" + index + ".png");
                         } else {
-                            img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/000" + index + ".png");
+                            img.src = require("./../../../public/Videos/DAVIS2016/results/" + that.videoName + "/000" + index + ".png");
                         }
                     } else {
                         if(start < 10) {
-                            img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/0000" + index + ".jpg");
+                            img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/" + that.videoName + "/0000" + index + ".jpg");
                         } else {
-                            img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/000" + index + ".jpg");
+                            img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/" + that.videoName + "/000" + index + ".jpg");
                         }
                     }
                     
@@ -213,6 +223,10 @@ export default {
             }
         },
         playVideo: function() {
+            if(this.globalIndex === this.indexRange[1]) {
+                console.log(this.frameSequence[this.globalIndex]);
+                this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
+            }
             this.showLoadingBar = false;
            // this.playMask();
             this.barrage.play();
@@ -237,6 +251,7 @@ export default {
                         setTimeout(step, that.debug ? 1000 : 100);
                     } else {
                         that.barrage.pause();
+                        that.isPlayed = true;
                         // 本段播放结束回调
                         // 我这里就放一个重新播放的按钮
                         // that.eleContainer.insertAdjacentHTML('beforeEnd', '<button @click="playVideo">再看一遍</button>');
@@ -272,9 +287,9 @@ export default {
                         // that.playMask();
                     };
                     if(start < 10) {
-                        img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/0000" + index + ".png");
+                        img.src = require("./../../../public/Videos/DAVIS2016/results/"+ that.videoName + "/0000" + index + ".png");
                     } else {
-                        img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/000" + index + ".png");
+                        img.src = require("./../../../public/Videos/DAVIS2016/results/"+ that.videoName + "/000" + index + ".png");
                     }
                     
                 })(start, that);
@@ -296,7 +311,7 @@ export default {
             this.barrage.play();
         },
         // interact with backend
-        // 从后端加载图像列表
+        // TODO: 从后端加载图像列表
         created: async function () {
             // let res = await get('/list_images');
             // let form = res.data.data;
@@ -305,6 +320,32 @@ export default {
             //     let name = temp[temp.length-1];
             //     this.imgList.push({name:name, url:item});
             // })
+        },
+        handlePreview(file) {
+            // 清除弹幕
+            // 更新图片
+            this.videoName=file.name;
+            this.frameSequence = {
+                length: 0
+            };
+            this.maskSequence = {
+                length: 0
+            }
+            this.loadFrame();
+            this.loadMask();
+            this.playVideo();
+
+            // file.maskUrl = "http://172.18.167.9:9000/process_barrage/"+file.name;
+            // console.log(file.maskUrl);
+            // this.$refs.mask.crossOrigin = '';
+            // this.currentMask = file.maskUrl;
+            // // console.log(this.currentMask);
+            // if(this.barrage !== undefined) {
+            //     this.barrage.setData([]);
+            
+            // }
+            // this.loadImage();
+            
         }
 
 
