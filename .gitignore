@@ -44,3 +44,5 @@ yarn-error.log*
 *.sln
 *.sw?
 >>>>>>> 337476a688ef839c0fdfd322de484c3744d9907f
+
+public/Videos/

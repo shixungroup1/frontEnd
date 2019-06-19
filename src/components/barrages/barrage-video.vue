@@ -1,16 +1,11 @@
 <template>
     <div class="outline">
+        <h2>视频弹幕</h2>
         <div id="videoContainer" class="videoContainer" ref="videoContainer" >
-            <span id="loading" class="loading" data-percent="0" ref="loadingProcess"></span>
+            <span id="loading" class="loading" data-percent="0" ref="loadingProcess" v-show="showLoadingBar"></span>
         </div>
         <button @click="playVideo">play image frame</button>
-
-        <hr/>
-        <h2>视频弹幕</h2>
-        <div id="container" ref="container">
-            <!-- controls 属性规定浏览器应该为视频提供播放控件。 -->
-            <!--  -->
-        </div>
+        
         <!-- 发送弹幕模块 -->
         <div class="sending">
             <div class="inputFrame">
@@ -60,13 +55,27 @@ export default {
 
             testMask: null,
             globalIndex: 0,
-            debug: false
+            debug: false,
+            showLoadingBar: true,
+            // video list
+            videoList: [{
+                    name: "blackswan",
+                    url: require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/00000.jpg")
+                }, {
+                    name: "bmx-trees",
+                    url: require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/bmx-trees/00000.jpg")
+                }, {
+                    name: "camel",
+                    url: require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/camel/00000.jpg")
+                }
+                // {
+                    // name: 'bird.png',
+                    // url: require('./origin.jpg')
+                // }
+            ],
         }
     },
-    mounted() {
-        this.container = this.$refs.container;
-        
-        
+    mounted() {        
         // init common
         this.maxLength= 50;
         this.frameSequence = { length: 0 };
@@ -80,7 +89,7 @@ export default {
         
         // init barrage
         this.barrage = new Barrage({container: this.videoContainer});
-        this.barrage.canvas.height = this.container.clientHeight - 80;
+        this.barrage.canvas.height = this.videoContainer.clientHeight - 80;
         // 装载弹幕数据
         this.barrage.setData(data);
         this.barrage.setConfig({ speed: 200 });
@@ -88,10 +97,6 @@ export default {
         this.first = true;
         this.loadFrame();
         this.loadMask();
-        
-        
-        
-       
     },
     methods: {
         // 实时获取视频图像
@@ -168,9 +173,11 @@ export default {
 
         // dealing with frame
         loadFrame: function() {
+            
             // this.barrage.play();
             for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
                 var that = this;
+                
                 (function (index, that) {
                     var img = document.createElement("img");
                     img.height = 540;
@@ -179,7 +186,9 @@ export default {
                     img.onload=function() {
                         that.frameSequence.length++;
                         that.frameSequence[index] = this;
-                        
+                        var percent = Math.round(100 * that.frameSequence.length / that.maxLength);
+                        that.eleLoading.setAttribute('data-percent', percent);
+                        that.eleLoading.style.backgroundSize = percent + '% 100%';
                     };
                     img.onerror = function() {
                         that.frameSequence.length++;
@@ -199,15 +208,15 @@ export default {
                             img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/000" + index + ".jpg");
                         }
                     }
+                    
                 })(start, that);
             }
         },
         playVideo: function() {
+            this.showLoadingBar = false;
            // this.playMask();
             this.barrage.play();
             var percent = Math.round(100 * this.frameSequence.length / this.maxLength);
-            this.eleLoading.setAttribute('data-percent', percent);
-            this.eleLoading.style.backgroundSize = percent + '% 100%';
             // 全部加载完毕，无论成功还是失败
             if (percent == 100) {
                 var index = this.indexRange[0];
@@ -285,6 +294,17 @@ export default {
             this.getVideoFrame();
             this.computeFrameMask();
             this.barrage.play();
+        },
+        // interact with backend
+        // 从后端加载图像列表
+        created: async function () {
+            // let res = await get('/list_images');
+            // let form = res.data.data;
+            // form.forEach((item)=>{
+            //     let temp = item.split('/');
+            //     let name = temp[temp.length-1];
+            //     this.imgList.push({name:name, url:item});
+            // })
         }
 
 
