@@ -82,7 +82,9 @@ export default {
                 // }
             ],
             videoName: "blackswan",
-            isPlayed: false
+            isPlayed: false,
+            finishLoadFrame: false,
+            finishLoadMask: false
         }
     },
     mounted() {        
@@ -111,6 +113,7 @@ export default {
     methods: {
         // 实时获取视频图像
         getVideoFrame: function() {
+            console.log("getvideframe")
             // this.video = this.$refs.video;
             this.vCanvas = document.createElement('canvas');
             this.vCanvas.width = 880;
@@ -119,7 +122,11 @@ export default {
             var that = this;
             // 将视频绘制到canvas
             this.barrage.afterRender = () => {
-                this.vContext.drawImage(that.maskSequence[that.globalIndex], 0, 0, this.vCanvas.width, this.vCanvas.height);
+                // console.log(that.frameSequence.length);
+                if(that.maskSequence[that.globalIndex] !== undefined) {
+                    console.log("drawImage")
+                    this.vContext.drawImage(that.maskSequence[that.globalIndex], 0, 0, this.vCanvas.width, this.vCanvas.height);
+                }
             }
         },
         // 计算蒙版，即哪些地方需要透明
@@ -199,6 +206,9 @@ export default {
                         var percent = Math.round(100 * that.frameSequence.length / that.maxLength);
                         that.eleLoading.setAttribute('data-percent', percent);
                         that.eleLoading.style.backgroundSize = percent + '% 100%';
+                        if(index == that.indexRange[1]) {
+                            that.finishLoadFrame = true;
+                        }
                     };
                     img.onerror = function() {
                         that.frameSequence.length++;
@@ -263,6 +273,7 @@ export default {
         },
         // mask, 事先加载到序列数组里
         loadMask: function() {
+            console.log("loadMask");
             for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
                 var that = this;
                 (function (index, that) {
@@ -272,13 +283,13 @@ export default {
                     img.onload=function() {
                         that.maskSequence.length++;
                         that.maskSequence[index] = this;
-                        if(that.first) {
-                           
+                        console.log("mask in loadMask");
+                        if(index == that.indexRange[1]) {
+                            that.finishLoadMask = true;
                             that.getVideoFrame();
                             that.computeFrameMask();
-                           
-                            that.first = false;
                         }
+                        
                         // that.playMask();
                     };
                     img.onerror = function() {
@@ -295,21 +306,6 @@ export default {
                 })(start, that);
             }
         },
-        testMaskClick: function() {
-            this.mask = this.maskSequence[0];
-            var that = this;
-            //this.mask.src=require("./00000.png");
-            // this.mask.onload = function() {
-            //     console.log("onload");
-            //     that.getVideoFrame();
-            //     that.computeFrameMask();
-            //     that.barrage.play();
-            // }
-            console.log("onload");
-            this.getVideoFrame();
-            this.computeFrameMask();
-            this.barrage.play();
-        },
         // interact with backend
         // TODO: 从后端加载图像列表
         created: async function () {
@@ -324,16 +320,31 @@ export default {
         handlePreview(file) {
             // 清除弹幕
             // 更新图片
+            this.first = true;
             this.videoName=file.name;
+            if(this.eleContainer.hasChildNodes(this.frameSequence[this.globalIndex])) {
+                console.log("haschild")
+                this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
+            }
+            
+            console.log(this.eleContainer.firstChild);
+            console.log('debug1');
             this.frameSequence = {
                 length: 0
             };
             this.maskSequence = {
                 length: 0
             }
+            console.log('debug2');
             this.loadFrame();
             this.loadMask();
-            this.playVideo();
+            this.globalIndex = 0;
+            // while(!(this.finishLoadFrame && this.finishLoadMask)) {
+
+            // }
+            this.finishLoadFrame = false;
+            this.finishLoadMask = false;
+            // this.playVideo();
 
             // file.maskUrl = "http://172.18.167.9:9000/process_barrage/"+file.name;
             // console.log(file.maskUrl);
