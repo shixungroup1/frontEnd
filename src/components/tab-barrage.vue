@@ -34,7 +34,7 @@ export default {
     },
     methods: {
         changeOption: function(choice) {
-            this.option = choice
+            this.option = choice;
             console.log("this.option " + this.option);
         }
     }
