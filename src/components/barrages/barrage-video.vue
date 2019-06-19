@@ -6,6 +6,7 @@
         <button @click="playVideo">play image frame</button>
 
         <div id="maskContainer" class="maskContainer" ref="maskContainer" >
+            <img :src="currentMask" id="mask" ref="mask" hidden/>
             <!-- <span id="loading" class="loading" data-percent="0" ref="loadingProcess"></span> -->
         </div>
         <button @click="loadMask">play image mask</button>
@@ -47,7 +48,7 @@ export default {
             // percent
             eleLoading: null,
             // common
-            maxLength: 49,
+            maxLength: 50,
             indexRange: null,
             // frame
             frameSequence: { length: 0 },
@@ -58,7 +59,8 @@ export default {
             maskContainer:  this.$refs.maskContainer,
             input: "",
             
-            currentMask: null
+            currentMask: "", // url of mask
+            mask: this.$refs.mask
             
         }
     },
@@ -67,7 +69,7 @@ export default {
         
         
         // init common
-        this.maxLength= 49;
+        this.maxLength= 50;
         this.frameSequence = { length: 0 };
         this.indexRange = [0, 49];
         // init frame
@@ -170,7 +172,6 @@ export default {
             for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
                 var that = this;
                 (function (index, that) {
-                    
                     var img = document.createElement("img");
                     img.height = 450;
                     img.width = 880;
@@ -197,17 +198,21 @@ export default {
             }
         },
         playVideo: function() {
-            console.log("in play video func ");
+            
             var percent = Math.round(100 * this.frameSequence.length / this.maxLength);
+            console.log("in play video func " + percent);
+            
             this.eleLoading.setAttribute('data-percent', percent);
             this.eleLoading.style.backgroundSize = percent + '% 100%';
             // 全部加载完毕，无论成功还是失败
             if (percent == 100) {
+                console.log("percent == 100");
                 var index = this.indexRange[0];
                 this.eleContainer.innerHTML = '';
                 // 依次append图片对象
                 var that = this;
                 var step = function () {
+                    console.log("step is called");
                     if (that.frameSequence[index - 1]) {
                         that.eleContainer.removeChild(that.frameSequence[index - 1]);
                     }
@@ -232,7 +237,7 @@ export default {
                 setTimeout(step, 100);
             }
         },
-        // mask
+        // mask, 事先加载到序列数组里
         loadMask: function() {
             this.barrage.play();
             for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
