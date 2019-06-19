@@ -5,12 +5,6 @@
         </div>
         <button @click="playVideo">play image frame</button>
 
-        <!-- <div id="videoContainer" class="videoContainer" ref="videoContainer" > -->
-            
-            <!-- <img  ref="mask"/> -->
-            <!-- <span id="loading" class="loading" data-percent="0" ref="loadingProcess"></span> -->
-        <!-- </div> -->
-        <button @click="playMask">play image mask</button>
         <hr/>
         <h2>视频弹幕</h2>
         <div id="container" ref="container">
@@ -65,7 +59,8 @@ export default {
             first: true,
 
             testMask: null,
-            globalIndex: 0
+            globalIndex: 0,
+            debug: false
         }
     },
     mounted() {
@@ -191,16 +186,25 @@ export default {
                         that.frameSequence[index] = this;
                         // that.playVideo();
                     };
-                    if(start < 10) {
-                        img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/0000" + index + ".png");
+                     if(that.debug) {
+                        if(start < 10) {
+                            img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/0000" + index + ".png");
+                        } else {
+                            img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/000" + index + ".png");
+                        }
                     } else {
-                        img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/000" + index + ".png");
+                        if(start < 10) {
+                            img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/0000" + index + ".jpg");
+                        } else {
+                            img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/000" + index + ".jpg");
+                        }
                     }
                 })(start, that);
             }
         },
         playVideo: function() {
-            this.playMask();
+           // this.playMask();
+            this.barrage.play();
             var percent = Math.round(100 * this.frameSequence.length / this.maxLength);
             this.eleLoading.setAttribute('data-percent', percent);
             this.eleLoading.style.backgroundSize = percent + '% 100%';
@@ -211,7 +215,7 @@ export default {
                 // 依次append图片对象
                 var that = this;
                 var step = function () {
-                   
+                    that.globalIndex = index;
                     if (that.frameSequence[index - 1]) {
                         that.eleContainer.removeChild(that.frameSequence[index - 1]);
                     }
@@ -221,8 +225,9 @@ export default {
                     index++;
                     // 如果超过最大限制
                     if (index <= that.indexRange[1]) {
-                        setTimeout(step, 1000);
+                        setTimeout(step, that.debug ? 1000 : 100);
                     } else {
+                        that.barrage.pause();
                         // 本段播放结束回调
                         // 我这里就放一个重新播放的按钮
                         // that.eleContainer.insertAdjacentHTML('beforeEnd', '<button @click="playVideo">再看一遍</button>');
@@ -244,7 +249,10 @@ export default {
                         that.maskSequence.length++;
                         that.maskSequence[index] = this;
                         if(that.first) {
-                            that.testMaskClick();
+                           
+                            that.getVideoFrame();
+                            that.computeFrameMask();
+                           
                             that.first = false;
                         }
                         // that.playMask();
@@ -259,53 +267,8 @@ export default {
                     } else {
                         img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/000" + index + ".png");
                     }
+                    
                 })(start, that);
-            }
-        },
-        playMask: function() {
-            
-            //this.barrage.play();
-            var percent = Math.round(100 * this.maskSequence.length / this.maxLength);
-           // this.eleLoading.setAttribute('data-percent', percent);
-           // this.eleLoading.style.backgroundSize = percent + '% 100%';
-            // 全部加载完毕，无论成功还是失败
-            if (percent == 100) {
-                var index = this.indexRange[0];
-                //this.videoContainer.innerHTML = '';
-                // 依次append图片对象
-                var that = this;
-                var step = function () {
-                    that.globalIndex = index;
-                    // if (that.maskSequence[index - 1]) {
-                    //     that.videoContainer.removeChild(that.maskSequence[index - 1]);
-                    // }
-                    // that.videoContainer.appendChild(that.maskSequence[index]);
-                    // that.currentMask = that.maskSequence[index];
-                    // that.mask = that.maskSequence[index];
-                    // // console.log("mask");
-                    // // console.log(that.mask);
-                    // if(that.first) {
-                    //     console.log(that.first);
-                    //     that.mask = that.maskSequence[0];
-                    //     that.getVideoFrame();
-                    //     that.computeFrameMask();
-                    //     that.barrage.play();
-                    //     that.first = false;
-                    // }
-                    // 序列增加
-                    index++;
-                    // 如果超过最大限制
-                    if (index <= that.indexRange[1]) {
-                        setTimeout(step, 1000);
-                    } else {
-                        // 本段播放结束回调
-                        // 我这里就放一个重新播放的按钮
-                        that.videoContainer.insertAdjacentHTML('beforeEnd', '<button onclick="playVideo()">再看一遍</button>');
-                        that.barrage.pause();
-                    }
-                };
-                // 等100%动画结束后执行播放
-                setTimeout(step, 1000);
             }
         },
         testMaskClick: function() {
