@@ -3,12 +3,17 @@
         <div id="videoContainer" class="videoContainer" ref="videoContainer" >
             <span id="loading" class="loading" data-percent="0" ref="loadingProcess"></span>
         </div>
-        <button @click="loadFrame">play image frame</button>
+        <button @click="playVideo">play image frame</button>
+
+        <div id="maskContainer" class="maskContainer" ref="maskContainer" >
+            <!-- <span id="loading" class="loading" data-percent="0" ref="loadingProcess"></span> -->
+        </div>
+        <button @click="loadMask">play image mask</button>
         <hr/>
         <h2>视频弹幕</h2>
         <div id="container" ref="container">
-            controls 属性规定浏览器应该为视频提供播放控件。
-            <video src="../../../public/Videos/demo.mp4" id="video" alt="" ref="video" controls/>
+            <!-- controls 属性规定浏览器应该为视频提供播放控件。 -->
+            <!-- <video src="../../../public/Videos/demo.mp4" id="video" alt="" ref="video" controls/> -->
         </div>
         <!-- 发送弹幕模块 -->
         <div class="sending">
@@ -35,39 +40,53 @@ export default {
     name: "tabBarrage",
     data() {
         return {
-            container: this.$refs.container,
             //video: this.$refs.video,
             vCanvas: null,
             vContext: null,
             input: "样例弹幕",
+            // percent
             eleLoading: null,
-            store: { length: 0 },
+            // common
             maxLength: 49,
             indexRange: null,
-            videoFrame: null,
+            // frame
+            frameSequence: { length: 0 },
+            eleContainer: null,
+            
+            // mask
+            maskSequence: { length: 0 },
+            maskContainer:  this.$refs.maskContainer,
             input: "",
-            eleContainer: null
+            
+            currentMask: null
             
         }
     },
     mounted() {
         this.container = this.$refs.container;
         
+        
+        // init common
+        this.maxLength= 49;
+        this.frameSequence = { length: 0 };
+        this.indexRange = [0, 49];
+        // init frame
+        this.eleContainer = this.$refs.videoContainer;
+        this.eleLoading = this.$refs.loadingProcess;
+        
+        // init mask
+        this.maskContainer = this.$refs.maskContainer;
+        
+        // init barrage
         this.barrage = new Barrage({container: this.container});
         this.barrage.canvas.height = this.container.clientHeight - 80;
         // 装载弹幕数据
         this.barrage.setData(data);
         // this.barrage.setData();
-        this.getVideoFrame();
-        this.computeFrameMask();
-        this.bindVideoBarrage();
-        this.eleContainer = this.$refs.videoContainer;
-        this.eleLoading = this.$refs.loadingProcess;
-        this.maxLength= 49;
-        this.store = { length: 0 };
-        this.indexRange = [0, 2];
-        this.videoSrc ="./00000.jpg";
+
+        this.loadFrame();
         
+        // this.bindVideoBarrage();
     },
     methods: {
         // 实时获取视频图像
@@ -77,9 +96,12 @@ export default {
             this.vCanvas.width = 880;
             this.vCanvas.height = 540;
             this.vContext = this.vCanvas.getContext('2d');
+            var that = this;
             // 将视频绘制到canvas
             this.barrage.afterRender = () => {
-                this.vContext.drawImage(this.eleContainer, 0, 0, this.vCanvas.width, this.vCanvas.height);
+                console.log("currentMask in afterRender");
+                console.log(that.currentMask)
+                this.vContext.drawImage(this.currentMask, 0, 0, this.vCanvas.width, this.vCanvas.height);
             }
         },
         // 计算蒙版，即哪些地方需要透明
@@ -102,6 +124,7 @@ export default {
                 }                
                 // 使用蒙版
                 this.barrage.setMask(frame); 
+                
             }
             
         },
@@ -143,7 +166,7 @@ export default {
 
         // dealing with frame
         loadFrame: function() {
-            this.barrage.play();
+            // this.barrage.play();
             for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
                 var that = this;
                 (function (index, that) {
@@ -151,17 +174,18 @@ export default {
                     var img = document.createElement("img");
                     img.height = 450;
                     img.width = 880;
+                    img.id = "frame" + index;
                     img.onload=function() {
-                        that.store.length++;
-                        that.store[index] = this;
+                        that.frameSequence.length++;
+                        that.frameSequence[index] = this;
                         that.playVideo();
                     };
                     img.onerror = function() {
                         console.log ("in onerror");
                         //console.log(typeof this);
                         //console.log(this);
-                        that.store.length++;
-                        that.store[index] = this;
+                        that.frameSequence.length++;
+                        that.frameSequence[index] = this;
                         that.playVideo();
                     };
                     if(start < 10) {
@@ -169,13 +193,12 @@ export default {
                     } else {
                         img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/000" + index + ".jpg");
                     }
-                    console.log (img);
                 })(start, that);
             }
         },
         playVideo: function() {
             console.log("in play video func ");
-            var percent = Math.round(100 * this.store.length / this.maxLength);
+            var percent = Math.round(100 * this.frameSequence.length / this.maxLength);
             this.eleLoading.setAttribute('data-percent', percent);
             this.eleLoading.style.backgroundSize = percent + '% 100%';
             // 全部加载完毕，无论成功还是失败
@@ -185,22 +208,90 @@ export default {
                 // 依次append图片对象
                 var that = this;
                 var step = function () {
-                    if (that.store[index - 1]) {
-                        that.eleContainer.removeChild(that.store[index - 1]);
+                    if (that.frameSequence[index - 1]) {
+                        that.eleContainer.removeChild(that.frameSequence[index - 1]);
                     }
-                    //var img = new Image();
-                    console.log("that.store[index]");
-                    console.log(that.store[index]);
-                    that.eleContainer.appendChild(that.store[index]);
+                    that.eleContainer.appendChild(that.frameSequence[index]);
+                    
+                    // 获取当前帧
+                    that.getVideoFrame();
+                    // 计算蒙版
+                    that.computeFrameMask();
                     // 序列增加
                     index++;
                     // 如果超过最大限制
                     if (index <= that.indexRange[1]) {
-                        setTimeout(step, 42);
+                        setTimeout(step, 100);
                     } else {
                         // 本段播放结束回调
                         // 我这里就放一个重新播放的按钮
-                        that.eleContainer.insertAdjacentHTML('beforeEnd', '<button onclick="play()">再看一遍</button>');
+                        // that.eleContainer.insertAdjacentHTML('beforeEnd', '<button @click="playVideo">再看一遍</button>');
+                    }
+                };
+                // 等100%动画结束后执行播放
+                setTimeout(step, 100);
+            }
+        },
+        // mask
+        loadMask: function() {
+            this.barrage.play();
+            for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
+                var that = this;
+                (function (index, that) {
+                    var img = document.createElement("img");
+                    img.height = 450;
+                    img.width = 880;
+                    img.id = "mask" + index;
+                    img.onload=function() {
+                        that.maskSequence.length++;
+                        that.maskSequence[index] = this;
+                        that.playMask();
+                    };
+                    img.onerror = function() {
+                        console.log ("in onerror");
+                        that.maskSequence.length++;
+                        that.maskSequence[index] = this;
+                        that.playMask();
+                    };
+                    if(start < 10) {
+                        img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/0000" + index + ".png");
+                    } else {
+                        img.src = require("./../../../public/Videos/DAVIS2016/results/blackswan/000" + index + ".png");
+                    }
+                })(start, that);
+            }
+        },
+        playMask: function() {
+            var percent = Math.round(100 * this.maskSequence.length / this.maxLength);
+           // this.eleLoading.setAttribute('data-percent', percent);
+           // this.eleLoading.style.backgroundSize = percent + '% 100%';
+            // 全部加载完毕，无论成功还是失败
+            if (percent == 100) {
+                var index = this.indexRange[0];
+                this.maskContainer.innerHTML = '';
+                // 依次append图片对象
+                var that = this;
+                var step = function () {
+                    if (that.maskSequence[index - 1]) {
+                        that.maskContainer.removeChild(that.maskSequence[index - 1]);
+                    }
+                    that.maskContainer.appendChild(that.maskSequence[index]);
+                    that.currentMask = that.maskSequence[index];
+                    console.log("currentMask in playMask");
+                    console.log(that.currentMask)
+                    // 获取当前帧
+                    that.getVideoFrame();
+                    // 计算蒙版
+                    that.computeFrameMask();
+                    // 序列增加
+                    index++;
+                    // 如果超过最大限制
+                    if (index <= that.indexRange[1]) {
+                        setTimeout(step, 100);
+                    } else {
+                        // 本段播放结束回调
+                        // 我这里就放一个重新播放的按钮
+                        that.maskContainer.insertAdjacentHTML('beforeEnd', '<button onclick="playVideo()">再看一遍</button>');
                     }
                 };
                 // 等100%动画结束后执行播放
