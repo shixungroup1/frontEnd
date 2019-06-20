@@ -121,7 +121,6 @@ export default {
     methods: {
         // 实时获取视频图像
         getVideoFrame: function() {
-            console.log("getvideframe")
             // this.video = this.$refs.video;
             this.vCanvas = document.createElement('canvas');
             this.vCanvas.width = 880;
@@ -135,7 +134,6 @@ export default {
                     
                     this.vContext.drawImage(that.maskSequence[that.globalIndex], 0, 0, this.vCanvas.width, this.vCanvas.height);
                 } else {
-                    console.log("fail to drawImage")
                 }
             }
         },
@@ -202,6 +200,7 @@ export default {
                     message: `弹幕发送失败`
                 });
             }
+            this.time = null;
         },
         // 处理图片
         handleImgBarrage: function() {
@@ -227,7 +226,6 @@ export default {
                         that.eleLoading.setAttribute('data-percent', percent);
                         that.eleLoading.style.backgroundSize = percent + '% 100%';
                         if(index === that.indexRange[0]+1) {
-                            console.log('append1');
                             that.eleContainer.appendChild(that.frameSequence[0]);
                             
                         }
@@ -261,14 +259,10 @@ export default {
             }
         },
         playVideo: function() {
-            // console.log("playing " + thatplaying);
             if(this.playing != 1) {
                 this.playing = 1;
                 this.currentTime = new Date().getTime();
-                console.log(this.globalIndex);
                 if(this.globalIndex === this.indexRange[1]) {
-                    console.log("if playVideo has")
-                    //console.log(this.frameSequence[this.globalIndex]);
                     this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
                 }
                 this.showLoadingBar = false;
@@ -283,13 +277,17 @@ export default {
                     var that = this;
                     var step = function () {
                         that.globalIndex = index;
-                        if(that.frameSequence[index] != undefined) {
-                            if (that.frameSequence[index - 1]) {
+                        // 正常情况remove上一帧，切换的话remove上一个视频的最后一帧
+                        //if(that.frameSequence[index] != undefined) {
+                            console.log("index" + index);
+                            console.log("lastChild" + that.eleContainer.lastChild.tagName);
+                            if(index != 0)
                                 that.eleContainer.removeChild(that.frameSequence[index - 1]);
-                            } 
-                            that.eleContainer.appendChild(that.frameSequence[index]);
+                            //if(that.eleContainer.lastChild )
+                            if( that.eleContainer.lastChild.tagName != "IMG")
+                                that.eleContainer.appendChild(that.frameSequence[index]);
                             index++;
-                        }
+                        //}
                         
                         
                         
@@ -315,7 +313,6 @@ export default {
         },
         // mask, 事先加载到序列数组里
         loadMask: function() {
-            console.log("loadMask");
             for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
                 var that = this;
                 (function (index, that) {
@@ -325,7 +322,6 @@ export default {
                     img.onload=function() {
                         that.maskSequence.length++;
                         that.maskSequence[index] = this;
-                        console.log("mask in loadMask");
                         if(index === that.indexRange[1]) {
                             that.finishLoadMask = true;
                             that.getVideoFrame();
@@ -365,10 +361,12 @@ export default {
         },
         handlePreview(file) {
             // 处理异常
+            console.log("handle " + this.frameSequence.length)
              if(this.frameSequence.length != this.maxLength) {
+                 // this.frameSequence.length
                  return;
              } else if (this.videoName !== file.name &&  this.finishLoadFrame && this.finishLoadMask) {
-                this.playing = false;
+                this.playing = -1;
                 this.finishLoadFrame = false;
                 this.finishLoadMask = false;
                 this.showLoadingBar = true;
@@ -379,13 +377,14 @@ export default {
                 this.first = true;
                 this.videoName=file.name;
                 this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
+                this.frameSequence = null;
+                this.maskSequence = null;
                 this.frameSequence = {
                     length: 0
                 };
                 this.maskSequence = {
                     length: 0
                 }
-                console.log('debug2');
                 this.loadFrame();
                 this.loadMask();
                 this.globalIndex = 0;
