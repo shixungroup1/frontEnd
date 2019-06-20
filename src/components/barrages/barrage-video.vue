@@ -3,8 +3,12 @@
         <h2>视频弹幕</h2>
         <div id="videoContainer" class="videoContainer" ref="videoContainer" >
             <span id="loading" class="loading" data-percent="0" ref="loadingProcess" v-show="showLoadingBar"></span>
+            
         </div>
-        <el-button type="primary" round @click="playVideo">播放</el-button>
+        <div id="replayContainer">
+            <el-button type="primary" round @click="playVideo" v-show="playing == 0">重播</el-button>
+        </div>
+        
         
         <!-- 发送弹幕模块 -->
         <div class="sending">
@@ -88,7 +92,7 @@ export default {
             // sendBarrage
             time: null,
             currentTime: null,
-            playing: false
+            playing: -1 // init
         }
     },
     mounted() {        
@@ -216,7 +220,6 @@ export default {
                     var img = document.createElement("img");
                     img.height = 540;
                     img.width = 880;
-                    img.id = "frame" + index;
                     img.onload=function() {
                         that.frameSequence.length++;
                         that.frameSequence[index] = this;
@@ -230,7 +233,7 @@ export default {
                         }
                         if(index === that.indexRange[1]){
                             that.finishLoadFrame = true;
-                            if(that.finishLoadMask && !that.playing) {
+                            if(that.finishLoadMask && that.playing != 1) {
                                 that.playVideo();
                             }
                         }
@@ -258,53 +261,57 @@ export default {
             }
         },
         playVideo: function() {
-            this.playing = true;
-            this.currentTime = new Date().getTime();
-            console.log(this.globalIndex);
-            if(this.globalIndex === this.indexRange[1]) {
-                console.log("if playVideo has")
-                //console.log(this.frameSequence[this.globalIndex]);
-                this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
+            // console.log("playing " + thatplaying);
+            if(this.playing != 1) {
+                this.playing = 1;
+                this.currentTime = new Date().getTime();
+                console.log(this.globalIndex);
+                if(this.globalIndex === this.indexRange[1]) {
+                    console.log("if playVideo has")
+                    //console.log(this.frameSequence[this.globalIndex]);
+                    this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
+                }
+                this.showLoadingBar = false;
+            // this.playMask();
+                this.barrage.replay();
+                var percent = Math.round(100 * this.frameSequence.length / this.maxLength);
+                // 全部加载完毕，无论成功还是失败
+                if (percent == 100) {
+                    var index = this.indexRange[0];
+                    // 
+                    // 依次append图片对象
+                    var that = this;
+                    var step = function () {
+                        that.globalIndex = index;
+                        if(that.frameSequence[index] != undefined) {
+                            if (that.frameSequence[index - 1]) {
+                                that.eleContainer.removeChild(that.frameSequence[index - 1]);
+                            } 
+                            that.eleContainer.appendChild(that.frameSequence[index]);
+                            index++;
+                        }
+                        
+                        
+                        
+                        // 序列增加
+                        
+                        // 如果超过最大限制
+                        if (index <= that.indexRange[1]) {
+                            setTimeout(step, that.debug ? 1000 : 100);
+                        } else {
+                            that.barrage.pause();
+                            that.isPlayed = true;
+                            that.playing = 0;
+                            // 本段播放结束回调
+                            // 我这里就放一个重新播放的按钮
+                            // that.eleContainer.insertAdjacentHTML('beforeEnd', '<button @click="playVideo">再看一遍</button>');
+                        }
+                    };
+                    // 等100%动画结束后执行播放
+                    setTimeout(step, 100);
+                }
             }
-            this.showLoadingBar = false;
-           // this.playMask();
-            this.barrage.replay();
-            var percent = Math.round(100 * this.frameSequence.length / this.maxLength);
-            // 全部加载完毕，无论成功还是失败
-            if (percent == 100) {
-                var index = this.indexRange[0];
-                // 
-                // 依次append图片对象
-                var that = this;
-                var step = function () {
-                    that.globalIndex = index;
-                    if(that.frameSequence[index] != undefined) {
-                        if (that.frameSequence[index - 1]) {
-                            that.eleContainer.removeChild(that.frameSequence[index - 1]);
-                        } 
-                        that.eleContainer.appendChild(that.frameSequence[index]);
-                        index++;
-                    }
-                    
-                    
-                    
-                    // 序列增加
-                    
-                    // 如果超过最大限制
-                    if (index <= that.indexRange[1]) {
-                        setTimeout(step, that.debug ? 1000 : 100);
-                    } else {
-                        that.barrage.pause();
-                        that.isPlayed = true;
-                        that.playing = false;
-                        // 本段播放结束回调
-                        // 我这里就放一个重新播放的按钮
-                        // that.eleContainer.insertAdjacentHTML('beforeEnd', '<button @click="playVideo">再看一遍</button>');
-                    }
-                };
-                // 等100%动画结束后执行播放
-                setTimeout(step, 100);
-            }
+            
         },
         // mask, 事先加载到序列数组里
         loadMask: function() {
@@ -323,7 +330,7 @@ export default {
                             that.finishLoadMask = true;
                             that.getVideoFrame();
                             that.computeFrameMask();
-                            if(that.finishLoadFrame && !that.playing) {
+                            if(that.finishLoadFrame && that.playing != 1) {
                                 that.playVideo();
                             }
                             
@@ -358,7 +365,9 @@ export default {
         },
         handlePreview(file) {
             // 处理异常
-            if(this.frameSequence.length != this.maxLength || this.videoName !== file.name &&  this.finishLoadFrame && this.finishLoadMask) {
+             if(this.frameSequence.length != this.maxLength) {
+                 return;
+             } else if (this.videoName !== file.name &&  this.finishLoadFrame && this.finishLoadMask) {
                 this.playing = false;
                 this.finishLoadFrame = false;
                 this.finishLoadMask = false;
@@ -370,9 +379,6 @@ export default {
                 this.first = true;
                 this.videoName=file.name;
                 this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
-                
-                console.log(this.eleContainer.firstChild);
-                console.log('debug1');
                 this.frameSequence = {
                     length: 0
                 };
@@ -471,5 +477,11 @@ html, body {
     left: 0; top: -1.5em;
     font-size: 12px;
     color: #eee;
+}
+
+#replayContainer {
+    height: 50px;
+    text-align: center;
+    position: relative;
 }
 </style>
