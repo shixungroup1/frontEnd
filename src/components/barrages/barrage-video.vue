@@ -223,8 +223,8 @@ export default {
                         var percent = Math.round(100 * that.frameSequence.length / that.maxLength);
                         that.eleLoading.setAttribute('data-percent', percent);
                         that.eleLoading.style.backgroundSize = percent + '% 100%';
-                        if(index > that.indexRange[0]) {
-                            
+                        if(index === that.indexRange[0]+1) {
+                            console.log('append1');
                             that.eleContainer.appendChild(that.frameSequence[0]);
                             
                         }
@@ -278,13 +278,18 @@ export default {
                 var that = this;
                 var step = function () {
                     that.globalIndex = index;
-                    if (that.frameSequence[index - 1]) {
-                        that.eleContainer.removeChild(that.frameSequence[index - 1]);
+                    if(that.frameSequence[index] != undefined) {
+                        if (that.frameSequence[index - 1]) {
+                            that.eleContainer.removeChild(that.frameSequence[index - 1]);
+                        } 
+                        that.eleContainer.appendChild(that.frameSequence[index]);
+                        index++;
                     }
-                    that.eleContainer.appendChild(that.frameSequence[index]);
+                    
+                    
                     
                     // 序列增加
-                    index++;
+                    
                     // 如果超过最大限制
                     if (index <= that.indexRange[1]) {
                         setTimeout(step, that.debug ? 1000 : 100);
