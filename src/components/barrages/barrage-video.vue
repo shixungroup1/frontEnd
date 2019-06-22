@@ -76,10 +76,10 @@ export default {
                     url:  "http://172.18.167.9:9000/get_video_frame/blackswan_00000.jpg"
                 }, {
                     name: "bmx-trees",
-                    url: require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/bmx-trees/00000.jpg")
+                    url: "http://172.18.167.9:9000/get_video_frame/bmx-trees_00000.jpg"
                 }, {
                     name: "camel",
-                    url: require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/camel/00000.jpg")
+                    url:  "http://172.18.167.9:9000/get_video_frame/camel_00000.jpg"
                 }
                 // {
                     // name: 'bird.png',
@@ -323,6 +323,7 @@ export default {
                     var img = document.createElement("img");
                     img.height = 450;
                     img.width = 880;
+                    img.crossOrigin = "";
                     img.onload=function() {
                         that.maskSequence.length++;
                         that.maskSequence[index] = this;
@@ -344,9 +345,9 @@ export default {
                         // that.playMask();
                     };
                     if(start < 10) {
-                        img.src = require("./../../../public/Videos/DAVIS2016/results/"+ that.videoName + "/0000" + index + ".png");
+                        img.src = "http://172.18.167.9:9000/get_video_mask/" + that.videoName + "_0000" + index + ".png";
                     } else {
-                        img.src = require("./../../../public/Videos/DAVIS2016/results/"+ that.videoName + "/000" + index + ".png");
+                        img.src = "http://172.18.167.9:9000/get_video_mask/" + that.videoName + "_000" + index + ".png";
                     }
                     
                 })(start, that);
