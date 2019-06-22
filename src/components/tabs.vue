@@ -14,9 +14,13 @@
       <el-tab-pane label="虚化">
           <tab-bokeh class="page"/>
       </el-tab-pane>
-      <el-tab-pane label="弹幕">
-          <tab-barrage class="page"/>
-      </el-tab-pane>
+
+        <el-tab-pane label="背景替换">
+            <tab-replace class="page"/>
+        </el-tab-pane>
+      <!--<el-tab-pane label="弹幕">-->
+          <!--<tab-barrage class="page"/>-->
+      <!--</el-tab-pane>-->
       <!-- <component class="page" :is="currentTabComponent"> </component> -->
     </el-tabs>
 
@@ -25,8 +29,9 @@
 <script>
     import tabBokeh from './tab-bokeh.vue'
     import tabCutout from './tab-cutout.vue'
-    import tabBarrage from './tab-barrage.vue'
+    // import tabBarrage from './tab-barrage.vue'
     import tabSA from './tab-sa.vue'
+    import tabReplace from './tab-replace'
     export default {
         name: "tabs",
         data() {
@@ -67,8 +72,9 @@
         components: {
             "tab-bokeh": tabBokeh,
             "tab-cutout": tabCutout,
-            "tab-barrage": tabBarrage,
-            "tab-sa": tabSA
+            // "tab-barrage": tabBarrage,
+            "tab-sa": tabSA,
+            "tab-replace": tabReplace
         }
     };
 
