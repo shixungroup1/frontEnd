@@ -225,7 +225,7 @@ export default {
                         if(start < 10) {
                             img.src = "http://172.18.167.9:8891/view/datasets/DAVIS2016/results/" + that.videoName + "/0000" + index + ".png";
                         } else {
-                            img.src = require("./../../../public/Videos/DAVIS2016/results/" + that.videoName + "/000" + index + ".png");
+                            // img.src = require("./../../../public/Videos/DAVIS2016/results/" + that.videoName + "/000" + index + ".png");
                         }
                     } else {
                         if(start < 10) {
@@ -235,7 +235,7 @@ export default {
                         }
                     }
                     img.onload=function() {
-                        console.log("img.onload");
+                        // console.log("img.onload");
                         that.frameSequence.length++;
                         that.frameSequence[index] = this;
                         var percent = Math.round(100 * that.frameSequence.length / that.maxLength);
@@ -283,8 +283,8 @@ export default {
                         that.globalIndex = index;
                         // 正常情况remove上一帧，切换的话remove上一个视频的最后一帧
                         //if(that.frameSequence[index] != undefined) {
-                            console.log("index" + index);
-                            console.log("lastChild" + that.eleContainer.lastChild.tagName);
+                            // console.log("index" + index);
+                            // console.log("lastChild" + that.eleContainer.lastChild.tagName);
                             if(index != 0)
                                 that.eleContainer.removeChild(that.frameSequence[index - 1]);
                             //if(that.eleContainer.lastChild )
@@ -366,7 +366,7 @@ export default {
         },
         handlePreview(file) {
             // 处理异常
-            console.log("handle " + this.frameSequence.length)
+            // console.log("handle " + this.frameSequence.length)
              if(this.frameSequence.length != this.maxLength) {
                  // this.frameSequence.length
                  return;

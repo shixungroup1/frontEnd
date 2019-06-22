@@ -2,7 +2,7 @@
     <div class="outline">
         <h2>图像弹幕</h2>
         <!-- 原图 -->
-        <div class="container" ref="container" > 
+        <div class="container" ref="container" >
             <el-image :src="url" class="img" :fit="fitMethod" v-if="currentImg === ''">
                 <div slot="error">
                     <div class="im-slot">
@@ -10,13 +10,13 @@
                     </div>
                 </div>
             </el-image>
-            
+
         </div>
         <img :src="currentImg" id="oriImg" ref="oriImg" @load="loadImage"/>
-        
+
         <!-- 蒙版 -->
         <img :src="currentMask" id="mask" ref="mask" hidden/>
-        
+
         <!-- 发送弹幕模块 -->
         <div class="sending">
             <div class="inputFrame">
@@ -30,10 +30,10 @@
                 <el-button type="primary" round @click="playBarrage">重播演示弹幕</el-button>
             </div>
         </div>
-       
-       
+
+
         <!-- 选择图片 -->
-        <div class="imgSelection"> 
+        <div class="imgSelection">
             <!-- 选择上传 -->
             <el-upload
                 class="upload-demo"
@@ -54,7 +54,7 @@
             </div>
         </div>
     </div>
-    
+
 </template>
 
 <script>
@@ -63,6 +63,7 @@ import Barrage from 'barrage-ui';
 import data from '../../plugins/utils/mockData.js';
 import {get, post, del} from '../../libs/http';
 import list from '../list';
+
 export default {
     name: "tabBarrage",
     data() {
@@ -146,7 +147,7 @@ export default {
                     that.vContext.drawImage(that.mask, 0, 0, that.oriImg.width, that.oriImg.height);
                 };
             }
-                
+
         },
         // 计算蒙版，即哪些地方需要透明
         computeImgMask: function() {
@@ -163,10 +164,10 @@ export default {
                     if(r > 128 || g > 128 || b > 128) {
                         frame.data[4*i + 3] = 0;
                     }
-                }                
+                }
                 // 使用蒙版
-                this.barrage.setMask(frame); 
-            }            
+                this.barrage.setMask(frame);
+            }
         },
         // 使得视频和图像协同操作
         playBarrage: function() {
@@ -232,18 +233,18 @@ export default {
             // console.log(this.currentMask);
             if(this.barrage !== undefined) {
                 this.barrage.setData([]);
-            
+
             }
             // this.loadImage();
-            
-        }, 
+
+        },
         async addUrl() {
             // this.submitUpload();
             let tmp = this.inputUrl.split('/'); // 从服务端获得图片信息
             let filename = tmp[tmp.length - 1];
             let data={url:this.inputUrl, name:filename};
             let res = await post("/upload_image", data);
-           
+
             console.log(res);
             this.imgList.push(data);
         }
@@ -279,7 +280,7 @@ h2 {
 
 #oriImg {
     /* translate: -500px; */
-    display: block; 
+    display: block;
     height: 500px;
     margin-top: -500px;
     margin-right: auto;
