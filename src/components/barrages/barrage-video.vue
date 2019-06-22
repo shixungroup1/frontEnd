@@ -72,7 +72,8 @@ export default {
             // video list
             videoList: [{
                     name: "blackswan",
-                    url: require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/blackswan/00000.jpg")
+                    origin: "",
+                    url:  "http://172.18.167.9:9000/get_video_frame/blackswan_00000.jpg"
                 }, {
                     name: "bmx-trees",
                     url: require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/bmx-trees/00000.jpg")
@@ -217,9 +218,24 @@ export default {
                 
                 (function (index, that) {
                     var img = document.createElement("img");
+                    img.crossOrigin = '';
                     img.height = 540;
                     img.width = 880;
+                    if(that.debug) {
+                        if(start < 10) {
+                            img.src = "http://172.18.167.9:8891/view/datasets/DAVIS2016/results/" + that.videoName + "/0000" + index + ".png";
+                        } else {
+                            img.src = require("./../../../public/Videos/DAVIS2016/results/" + that.videoName + "/000" + index + ".png");
+                        }
+                    } else {
+                        if(start < 10) {
+                            img.src = "http://172.18.167.9:9000/get_video_frame/" + that.videoName + "_0000" + index + ".jpg";
+                        } else {
+                            img.src = "http://172.18.167.9:9000/get_video_frame/" + that.videoName + "_000" + index + ".jpg";
+                        }
+                    }
                     img.onload=function() {
+                        console.log("img.onload");
                         that.frameSequence.length++;
                         that.frameSequence[index] = this;
                         var percent = Math.round(100 * that.frameSequence.length / that.maxLength);
@@ -236,24 +252,12 @@ export default {
                             }
                         }
                     };
-                    img.onerror = function() {
+                    img.onerror = function(err) {
                         that.frameSequence.length++;
                         that.frameSequence[index] = this;
                         // that.playVideo();
                     };
-                     if(that.debug) {
-                        if(start < 10) {
-                            img.src = require("./../../../public/Videos/DAVIS2016/results/" + that.videoName + "/0000" + index + ".png");
-                        } else {
-                            img.src = require("./../../../public/Videos/DAVIS2016/results/" + that.videoName + "/000" + index + ".png");
-                        }
-                    } else {
-                        if(start < 10) {
-                            img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/" + that.videoName + "/0000" + index + ".jpg");
-                        } else {
-                            img.src = require("./../../../public/Videos/DAVIS2016/JPEGImages/1080p/" + that.videoName + "/000" + index + ".jpg");
-                        }
-                    }
+                    
                     
                 })(start, that);
             }
