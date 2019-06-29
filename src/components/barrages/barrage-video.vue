@@ -50,7 +50,7 @@ export default {
             // percent
             eleLoading: null,
             // common
-            maxLength: 250,
+            maxLength: 0,
             indexRange: null,
             // frame
             frameSequence: { length: 0 },
@@ -84,8 +84,8 @@ export default {
                     name: "breakdance",
                     url:  "http://172.18.167.9:9000/get_video_frame/breakdance_00000.jpg"
                 },{
-                    name: "car-roundabout",
-                    url:  "http://172.18.167.9:9000/get_video_frame/car-roundabout_00000.jpg"
+                    name: "cows",
+                    url:  "http://172.18.167.9:9000/get_video_frame/cows_00000.jpg"
                 },{
                     name: "dance-twirl",
                     url:  "http://172.18.167.9:9000/get_video_frame/dance-twirl_00000.jpg"
@@ -108,17 +108,20 @@ export default {
             // sendBarrage
             time: null,
             currentTime: null,
-            playing: -1 // init
+            playing: -1, // init
+            roundNum: 2
         }
     },
     mounted() {
         // init common
-        this.maxLength= 250;
-        this.frameSequence = { length: 0 };
+        
+       
         this.indexRange = [0, 49];
+        this.maxLength= this.roundNum * (this.indexRange[1]+1);
         // init frame
         this.eleContainer = this.$refs.videoContainer;
         this.eleLoading = this.$refs.loadingProcess;
+        this.frameSequence = { length: 0 };
 
         // init mask
         this.videoContainer = this.$refs.videoContainer;
@@ -147,8 +150,15 @@ export default {
             this.barrage.afterRender = () => {
                 // console.log(that.frameSequence.length);
                 if(that.maskSequence[that.globalIndex] !== undefined) {
-
-                    this.vContext.drawImage(that.maskSequence[that.globalIndex], 0, 0, this.vCanvas.width, this.vCanvas.height);
+                    try {
+                        this.vContext.drawImage(that.maskSequence[that.globalIndex], 0, 0, this.vCanvas.width, this.vCanvas.height);
+                    } catch(DOMException) {
+                        this.$message({
+                            type: 'info',
+                            message: `加载失败，请刷新重试`
+                        });
+                    }
+                    
                 } else {
                 }
             }
@@ -193,16 +203,15 @@ export default {
         },
         // 发送弹幕
         sendBarrage: function() {
+            // 获取时间
             this.time = new Date();
-            // console.log("time " );
-            // console.log(1000 * (Math.random()) );
-            // console.log((this.time.getTime() - this.currentTime)/10);
             const success = this.barrage.add({
                 time: this.time.getTime() - this.currentTime, // 弹幕出现的时间(单位：毫秒)
                 text: this.input,
                 fontSize: 32,
                 color: '#ff0000'
             });
+            // 弹出时间
             if(success) {
                 this.input=""
                 this.$message({
@@ -218,25 +227,21 @@ export default {
             }
             this.time = null;
         },
-        // 处理图片
-        handleImgBarrage: function() {
-        },
-        computeImgMask: function() {
-        },
-
         // dealing with frame
         loadFrame: function() {
-            // this.barrage.play();
-            for (var round = 0; round <= 4; round++) {
+            // 遍历每一轮
+            for (var round = 0; round < this.roundNum; round++) {
                 (function(round, this_) {
+                    // 遍历一轮中的每一帧
                     for(var start = this_.indexRange[0]; start <= this_.indexRange[1]; start++) {
-                        console.log("debug " + round);
                         var that = this_;
                         (function (index, that) {
+                            // 创建图片
                             var img = document.createElement("img");
                             img.crossOrigin = '';
                             img.height = 540;
                             img.width = 880;
+                            // 设置图片地址
                             if(that.debug) {
                                 if(start < 10) {
                                     img.src = "http://172.18.167.9:8891/view/datasets/DAVIS2016/results/" + that.videoName + "/0000" + index + ".png";
@@ -247,40 +252,48 @@ export default {
                                 if(start < 10) {
                                     img.src = "http://172.18.167.9:9000/get_video_frame/" + that.videoName + "_0000" + index + ".jpg";
                                     // img.src = require("./0000" + index + ".jpg");
-                                    
-                            } else {
-                                    img.src = "http://172.18.167.9:9000/get_video_frame/" + that.videoName + "_000" + index + ".jpg";
-                                    //img.src = require("./0000" + index + ".jpg")
+                                } else {
+                                        img.src = "http://172.18.167.9:9000/get_video_frame/" + that.videoName + "_000" + index + ".jpg";
+                                        //img.src = require("./0000" + index + ".jpg")
+                                }
                             }
-                            }
+                            // 异步等待图片加载
                             img.onload=function() {
-                                // console.log("img.onload" + " " +  that.maxLength);
-                                console.log(index + " " + round * 50);
                                 that.frameSequence.length++;
-                                that.frameSequence[index+round * 50] = this;
+                                that.frameSequence[index+round *  (that.indexRange[1] + 1)] = this;
+                                // 设置进度条
+                                // console.log(that.frameSequence.length + " " + that.maxLength)
                                 var percent = Math.round(100 * that.frameSequence.length / that.maxLength);
                                 that.eleLoading.setAttribute('data-percent', percent);
                                 that.eleLoading.style.backgroundSize = percent + '% 100%';
-                                if(index + round * 50 === that.indexRange[0]) {
+                                // 先将第一个图片添加
+                                if(index + round *  (that.indexRange[1] + 1) === that.indexRange[0]) {
                                     that.eleContainer.appendChild(this);
-                                    
                                 }
-                                if(index + round * 50 === that.maxLength - 1){
-                                    console.log("finish LoadFrame");
-                                    
+                                // 所有图片都加载
+                                if(index + round *  (that.indexRange[1] + 1) === that.maxLength - 1){
+                                    // console.log("finish LoadFrame");
+                                    // 设置加载图片状态：true
                                     that.finishLoadFrame = true;
+                                    // mask也加载完毕且未播放，则播放
                                     if(that.finishLoadMask && that.playing != 1) {
-                                        console.log("playVideo");
+                                        // console.log("playVideo");
                                         that.playVideo();
                                     }
                                 }
                             };
                             img.onerror = function(err) {
-                                console.log("img.onerror");
+                                that.$message({
+                                    type: 'info',
+                                    message: `加载失败，请刷新重试`
+                                });
+                                // console.log("img.onerror");
                                 that.frameSequence.length++;
-                                that.frameSequence[index + round * 50] = this;
-                                if(index  + round * 50 === that.maxLength - 1){
+                                that.frameSequence[index + round * (that.indexRange[1] + 1)] = this;
+                                // 图片加载完
+                                if(index  + round * (that.indexRange[1] + 1) === that.maxLength - 1){
                                     that.finishLoadFrame = true;
+                                    // 播放
                                     if(that.finishLoadMask && that.playing != 1) {
                                         that.playVideo();
                                     }
@@ -294,78 +307,91 @@ export default {
             
         },
         playVideo: function() {
-            console.log( "play video is called" );
+            console.log("playVideo is called")
+            // 当前状态：未播放
             if(this.playing != 1) {
+                // 改状态：已播放
                 this.playing = 1;
+                // 获取起始时间
                 this.currentTime = new Date().getTime();
-                if(this.globalIndex === this.indexRange[1]) {
+                // 如果上一个视频已经播放完毕
+                if(this.globalIndex === this.maxLength - 1) {
+                    // 移除上个视频的最后一帧
                     this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
                 }
                 this.showLoadingBar = false;
-            // this.playMask();
+                // 播放弹幕
                 this.barrage.replay();
-                var percent = Math.round(100 * this.frameSequence.length / this.maxLength);
-                // 全部加载完毕，无论成功还是失败
-                if (percent == 100) {
-                    var index = this.indexRange[0];
-                    //
-                    // 依次append图片对象
-                    var that = this;
-                    var step = function () {
-                        that.globalIndex = index;
-                        // 正常情况remove上一帧，切换的话remove上一个视频的最后一帧
-                        //if(that.frameSequence[index] != undefined) {
-                            // console.log("index" + index);
-                            // console.log("lastChild" + that.eleContainer.lastChild.tagName);
-                            if(index != 0)
-                                that.eleContainer.removeChild(that.frameSequence[index - 1]);
-                            //if(that.eleContainer.lastChild )
-                            if( that.eleContainer.lastChild.tagName != "IMG")
-                                that.eleContainer.appendChild(that.frameSequence[index]);
-                            index++;
-                        //}
+                // 播放
+                var index = this.indexRange[0];
+                // 轮播图片
+                var that = this;
+                var step = function () {
+                    // 记录全局index
+                    that.globalIndex = index;
+                    // 正常情况remove上一帧，切换的话remove上一个视频的最后一帧
+                    //if(that.frameSequence[index] != undefined) {
+                    // 移除上一帧
+                    if(index !== 0 && that.eleContainer.lastChild.tagName === "IMG")
+                        that.eleContainer.removeChild(that.eleContainer.lastChild);
+                    else
+                        console.log("last child: " + that.eleContainer.lastChild)
+                    
+                    // 添加下一帧，避免重复添加
+                    if( that.eleContainer.lastChild.tagName != "IMG") {
+                        that.eleContainer.appendChild(that.frameSequence[index]);
+                        console.log ("append " + that.frameSequence[index]);
+                    }
+                        
 
+                        
+                    index++;
+                    //}
 
-
-                        // 序列增加
-
-                        // 如果超过最大限制
-                        if (index <= that.indexRange[1] + 200) {
-                            setTimeout(step, that.debug ? 1000 : 100);
-                        } else {
-                            that.barrage.pause();
-                            that.isPlayed = true;
-                            that.playing = 0;
-                            // 本段播放结束回调
-                            // 我这里就放一个重新播放的按钮
-                            // that.eleContainer.insertAdjacentHTML('beforeEnd', '<button @click="playVideo">再看一遍</button>');
-                        }
-                    };
-                    // 等100%动画结束后执行播放
-                    setTimeout(step, 100);
-                }
+                    // 未播放完毕
+                    if (index < that.maxLength) {
+                        setTimeout(step, that.debug ? 1000 : 100);
+                    } else {
+                        // 暂停弹幕
+                        that.barrage.pause();
+                        // 当前状态：未播放
+                        that.playing = 0;
+                    }
+                };
+                // 等100%动画结束后执行播放
+                setTimeout(step, 1);
             }
 
         },
         // mask, 事先加载到序列数组里
         loadMask: function() {
-            for (var round = 0; round <= 4; round++) {
+            // 循环播放轮数
+            for (var round = 0; round < this.roundNum; round++) {
                 (function(round, this_) {
+                    // 循环每一帧mask
                     for(var start = this_.indexRange[0]; start <= this_.indexRange[1]; start++) {
                         var that = this_;
                         (function (index, that) {
+                            // 创建图像DOM
                             var img = document.createElement("img");
+                            // 设置相关属性
                             img.height = 450;
                             img.width = 880;
                             img.crossOrigin = "";
+                            // 异步等待图片加载
                             img.onload=function() {
                                 that.maskSequence.length++;
-                                that.maskSequence[index + round * 50] = this;
-                                if(index + round * 50 === that.maxLength - 1) {
-                                    console.log("finishLoadMask")
+                                // 加载完的图片存入数组
+                                that.maskSequence[index + round * (that.indexRange[1] + 1)] = this;
+                                // 最后一张mask加载完
+                                if(index + round *  (that.indexRange[1] + 1) === that.maxLength - 1) {
+                                    // console.log("finishLoadMask")
                                     that.finishLoadMask = true;
+                                    // 设置弹幕
                                     that.getVideoFrame();
+                                    // 计算mask
                                     that.computeFrameMask();
+                                    // 播放
                                     if(that.finishLoadFrame && that.playing != 1) {
                                         that.playVideo();
                                     }
@@ -373,9 +399,9 @@ export default {
                             };
                             img.onerror = function() {
                                 that.maskSequence.length++;
-                                that.maskSequence[index + round * 50] = this;
-                                if(index + round * 50 === that.maxLength - 1) {
-                                    console.log("finishLoadMask")
+                                that.maskSequence[index + round *  (that.indexRange[1] + 1)] = this;
+                                if(index + round *  (that.indexRange[1] + 1) === that.maxLength - 1) {
+                                    // console.log("finishLoadMask")
                                     that.finishLoadMask = true;
                                     that.getVideoFrame();
                                     that.computeFrameMask();
@@ -415,7 +441,8 @@ export default {
                 // 更新图片
                 this.first = true;
                 this.videoName=file.name;
-                this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
+                if(this.eleContainer.lastChild.tagName === "IMG")
+                    this.eleContainer.removeChild(this.frameSequence[this.globalIndex]);
                 this.frameSequence = null;
                 this.maskSequence = null;
                 this.frameSequence = {
