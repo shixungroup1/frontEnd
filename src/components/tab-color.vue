@@ -42,7 +42,7 @@
 <script>
     import {get, post, del} from '../libs/http';
     export default {
-        name: "tabBokeh",
+        name: "tab-color",
         data() {
             return{
                 fileList: [],
@@ -122,7 +122,6 @@
 
             }
         }
-
     }
 </script>
 

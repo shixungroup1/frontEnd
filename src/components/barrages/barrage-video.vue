@@ -3,25 +3,25 @@
         <h2>视频弹幕</h2>
         <div id="videoContainer" class="videoContainer" ref="videoContainer" >
             <span id="loading" class="loading" data-percent="0" ref="loadingProcess" v-show="showLoadingBar"></span>
-            
+
         </div>
         <div id="replayContainer">
             <el-button type="primary" round @click="playVideo" v-show="playing == 0">重播</el-button>
         </div>
-        
-        
+
+
         <!-- 发送弹幕模块 -->
         <div class="sending">
             <div class="inputFrame">
-                <el-input v-model="input" placeholder="请输入内容"></el-input>
+                <el-input v-model="input" placeholder="请输入内容" @keyup.enter.native="sendBarrage"></el-input>
             </div>
             <div class="buttonFrame">
                 <el-button type="primary" round @click="sendBarrage">发送</el-button>
             </div>
         </div>
-        
+
         <!-- 选择视频 -->
-        <div class="videoSelection"> 
+        <div class="videoSelection">
             <!-- 选择上传 -->
             <el-upload
                 class="upload-demo"
@@ -33,7 +33,7 @@
             </el-upload>
         </div>
     </div>
-    
+
 </template>
 
 <script>
@@ -55,12 +55,12 @@ export default {
             // frame
             frameSequence: { length: 0 },
             eleContainer: null,
-            
+
             // mask
             maskSequence: { length: 0 },
             videoContainer:  this.$refs.videoContainer,
             input: "",
-            
+
             currentMask: "", // url of mask
             mask: null,
             first: true,
@@ -96,7 +96,7 @@ export default {
             playing: -1 // init
         }
     },
-    mounted() {        
+    mounted() {
         // init common
         this.maxLength= 50;
         this.frameSequence = { length: 0 };
@@ -104,10 +104,10 @@ export default {
         // init frame
         this.eleContainer = this.$refs.videoContainer;
         this.eleLoading = this.$refs.loadingProcess;
-        
+
         // init mask
         this.videoContainer = this.$refs.videoContainer;
-        
+
         // init barrage
         this.barrage = new Barrage({container: this.videoContainer});
         this.barrage.canvas.height = this.videoContainer.clientHeight - 80;
@@ -132,7 +132,7 @@ export default {
             this.barrage.afterRender = () => {
                 // console.log(that.frameSequence.length);
                 if(that.maskSequence[that.globalIndex] !== undefined) {
-                    
+
                     this.vContext.drawImage(that.maskSequence[that.globalIndex], 0, 0, this.vCanvas.width, this.vCanvas.height);
                 } else {
                 }
@@ -155,11 +155,11 @@ export default {
                     if(r > 15 || g > 15 || b > 15) {
                         frame.data[4*i + 3] = 0;
                     }
-                }                
+                }
                 // 使用蒙版
-                this.barrage.setMask(frame); 
+                this.barrage.setMask(frame);
             }
-            
+
         },
         // 使得视频和图像协同操作
         bindVideoBarrage: function() {
@@ -211,11 +211,11 @@ export default {
 
         // dealing with frame
         loadFrame: function() {
-            
+
             // this.barrage.play();
             for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
                 var that = this;
-                
+
                 (function (index, that) {
                     var img = document.createElement("img");
                     img.crossOrigin = '';
@@ -243,7 +243,7 @@ export default {
                         that.eleLoading.style.backgroundSize = percent + '% 100%';
                         if(index === that.indexRange[0]+1) {
                             that.eleContainer.appendChild(that.frameSequence[0]);
-                            
+
                         }
                         if(index === that.indexRange[1]){
                             that.finishLoadFrame = true;
@@ -257,8 +257,8 @@ export default {
                         that.frameSequence[index] = this;
                         // that.playVideo();
                     };
-                    
-                    
+
+
                 })(start, that);
             }
         },
@@ -276,7 +276,7 @@ export default {
                 // 全部加载完毕，无论成功还是失败
                 if (percent == 100) {
                     var index = this.indexRange[0];
-                    // 
+                    //
                     // 依次append图片对象
                     var that = this;
                     var step = function () {
@@ -292,11 +292,11 @@ export default {
                                 that.eleContainer.appendChild(that.frameSequence[index]);
                             index++;
                         //}
-                        
-                        
-                        
+
+
+
                         // 序列增加
-                        
+
                         // 如果超过最大限制
                         if (index <= that.indexRange[1]) {
                             setTimeout(step, that.debug ? 1000 : 100);
@@ -313,7 +313,7 @@ export default {
                     setTimeout(step, 100);
                 }
             }
-            
+
         },
         // mask, 事先加载到序列数组里
         loadMask: function() {
@@ -334,9 +334,9 @@ export default {
                             if(that.finishLoadFrame && that.playing != 1) {
                                 that.playVideo();
                             }
-                            
+
                         }
-                        
+
                         // that.playMask();
                     };
                     img.onerror = function() {
@@ -349,7 +349,7 @@ export default {
                     } else {
                         img.src = "http://172.18.167.9:9000/get_video_mask/" + that.videoName + "_000" + index + ".png";
                     }
-                    
+
                 })(start, that);
             }
         },
@@ -375,8 +375,8 @@ export default {
                 this.finishLoadFrame = false;
                 this.finishLoadMask = false;
                 this.showLoadingBar = true;
-                this.barrage.pause(); 
-                this.barrage.goto(0); 
+                this.barrage.pause();
+                this.barrage.goto(0);
                 // 清除弹幕
                 // 更新图片
                 this.first = true;
@@ -396,7 +396,7 @@ export default {
                 // while(!(this.finishLoadFrame && this.finishLoadMask)) {
 
                 // }
-                
+
                 // this.playVideo();
 
                 // file.maskUrl = "http://172.18.167.9:9000/process_barrage/"+file.name;
@@ -406,13 +406,13 @@ export default {
                 // // console.log(this.currentMask);
                 // if(this.barrage !== undefined) {
                 //     this.barrage.setData([]);
-                
+
                 // }
                 // this.loadImage();
-                
+
             }
         }
-            
+
 
 
     }
@@ -454,7 +454,7 @@ html, body {
 
 
 .videoContainer {
-    width: 880px; 
+    width: 880px;
     height: 540px;
     margin: auto;
     background-color: #000;
