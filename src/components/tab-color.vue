@@ -72,7 +72,7 @@
                 this.url1="";
                 let temp=this.url.split('/');
                 let name=temp[temp.length-1];
-                this.url1=this.baseUrl+"/process_bokeh/"+name;
+                this.url1=this.baseUrl+"/process_splash/"+name;
                 console.log(this.url1)
                 //let res = await get('/process/'+name);
                 //console.log(res);
