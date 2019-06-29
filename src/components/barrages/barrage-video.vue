@@ -50,7 +50,7 @@ export default {
             // percent
             eleLoading: null,
             // common
-            maxLength: 50,
+            maxLength: 250,
             indexRange: null,
             // frame
             frameSequence: { length: 0 },
@@ -70,7 +70,11 @@ export default {
             debug: false,
             showLoadingBar: true,
             // video list
-            videoList: [{
+            videoList: [/*{
+                    name: "bear",
+                    origin: "",
+                    url:  "http://172.18.167.9:9000/get_video_frame/bear_00000.jpg"
+                },*/ {
                     name: "blackswan",
                     origin: "",
                     url:  "http://172.18.167.9:9000/get_video_frame/blackswan_00000.jpg"
@@ -80,7 +84,13 @@ export default {
                 }, {
                     name: "camel",
                     url:  "http://172.18.167.9:9000/get_video_frame/camel_00000.jpg"
-                }
+                } /*,{
+                    name: "bmx-bumps",
+                    url:  "http://172.18.167.9:9000/get_video_frame/bmx-bumps_00000.jpg"
+                }, {
+                    name: "boat",
+                    url:  "http://172.18.167.9:9000/get_video_frame/boat_00000.jpg"
+                }*/
                 // {
                     // name: 'bird.png',
                     // url: require('./origin.jpg')
@@ -98,7 +108,7 @@ export default {
     },
     mounted() {
         // init common
-        this.maxLength= 50;
+        this.maxLength= 250;
         this.frameSequence = { length: 0 };
         this.indexRange = [0, 49];
         // init frame
@@ -109,7 +119,7 @@ export default {
         this.videoContainer = this.$refs.videoContainer;
 
         // init barrage
-        this.barrage = new Barrage({container: this.videoContainer});
+        this.barrage = new Barrage({container: this.videoContainer, avoidOverlap: false});
         this.barrage.canvas.height = this.videoContainer.clientHeight - 80;
         // 装载弹幕数据
         this.barrage.setData(data);
@@ -183,7 +193,7 @@ export default {
             // console.log(1000 * (Math.random()) );
             // console.log((this.time.getTime() - this.currentTime)/10);
             const success = this.barrage.add({
-                time: this.time.getTime() - this.currentTime - 2000, // 弹幕出现的时间(单位：毫秒)
+                time: this.time.getTime() - this.currentTime, // 弹幕出现的时间(单位：毫秒)
                 text: this.input,
                 fontSize: 32,
                 color: '#ff0000'
@@ -211,58 +221,75 @@ export default {
 
         // dealing with frame
         loadFrame: function() {
-
             // this.barrage.play();
-            for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
-                var that = this;
-
-                (function (index, that) {
-                    var img = document.createElement("img");
-                    img.crossOrigin = '';
-                    img.height = 540;
-                    img.width = 880;
-                    if(that.debug) {
-                        if(start < 10) {
-                            img.src = "http://172.18.167.9:8891/view/datasets/DAVIS2016/results/" + that.videoName + "/0000" + index + ".png";
-                        } else {
-                            // img.src = require("./../../../public/Videos/DAVIS2016/results/" + that.videoName + "/000" + index + ".png");
-                        }
-                    } else {
-                        if(start < 10) {
-                            img.src = "http://172.18.167.9:9000/get_video_frame/" + that.videoName + "_0000" + index + ".jpg";
-                        } else {
-                            img.src = "http://172.18.167.9:9000/get_video_frame/" + that.videoName + "_000" + index + ".jpg";
-                        }
-                    }
-                    img.onload=function() {
-                        // console.log("img.onload");
-                        that.frameSequence.length++;
-                        that.frameSequence[index] = this;
-                        var percent = Math.round(100 * that.frameSequence.length / that.maxLength);
-                        that.eleLoading.setAttribute('data-percent', percent);
-                        that.eleLoading.style.backgroundSize = percent + '% 100%';
-                        if(index === that.indexRange[0]+1) {
-                            that.eleContainer.appendChild(that.frameSequence[0]);
-
-                        }
-                        if(index === that.indexRange[1]){
-                            that.finishLoadFrame = true;
-                            if(that.finishLoadMask && that.playing != 1) {
-                                that.playVideo();
+            for (var round = 0; round <= 4; round++) {
+                (function(round, this_) {
+                    for(var start = this_.indexRange[0]; start <= this_.indexRange[1]; start++) {
+                        console.log("debug " + round);
+                        var that = this_;
+                        (function (index, that) {
+                            var img = document.createElement("img");
+                            img.crossOrigin = '';
+                            img.height = 540;
+                            img.width = 880;
+                            if(that.debug) {
+                                if(start < 10) {
+                                    img.src = "http://172.18.167.9:8891/view/datasets/DAVIS2016/results/" + that.videoName + "/0000" + index + ".png";
+                                } else {
+                                    // img.src = require("./../../../public/Videos/DAVIS2016/results/" + that.videoName + "/000" + index + ".png");
+                                }
+                            } else {
+                                if(start < 10) {
+                                    img.src = "http://172.18.167.9:9000/get_video_frame/" + that.videoName + "_0000" + index + ".jpg";
+                                    // img.src = require("./0000" + index + ".jpg");
+                                    
+                            } else {
+                                    img.src = "http://172.18.167.9:9000/get_video_frame/" + that.videoName + "_000" + index + ".jpg";
+                                    //img.src = require("./0000" + index + ".jpg")
                             }
-                        }
-                    };
-                    img.onerror = function(err) {
-                        that.frameSequence.length++;
-                        that.frameSequence[index] = this;
-                        // that.playVideo();
-                    };
-
-
-                })(start, that);
+                            }
+                            img.onload=function() {
+                                // console.log("img.onload" + " " +  that.maxLength);
+                                console.log(index + " " + round * 50);
+                                that.frameSequence.length++;
+                                that.frameSequence[index+round * 50] = this;
+                                var percent = Math.round(100 * that.frameSequence.length / that.maxLength);
+                                that.eleLoading.setAttribute('data-percent', percent);
+                                that.eleLoading.style.backgroundSize = percent + '% 100%';
+                                if(index + round * 50 === that.indexRange[0]) {
+                                    that.eleContainer.appendChild(this);
+                                    
+                                }
+                                if(index + round * 50 === that.maxLength - 1){
+                                    console.log("finish LoadFrame");
+                                    
+                                    that.finishLoadFrame = true;
+                                    if(that.finishLoadMask && that.playing != 1) {
+                                        console.log("playVideo");
+                                        that.playVideo();
+                                    }
+                                }
+                            };
+                            img.onerror = function(err) {
+                                console.log("img.onerror");
+                                that.frameSequence.length++;
+                                that.frameSequence[index + round * 50] = this;
+                                if(index  + round * 50 === that.maxLength - 1){
+                                    that.finishLoadFrame = true;
+                                    if(that.finishLoadMask && that.playing != 1) {
+                                        that.playVideo();
+                                    }
+                                }
+                            };                        
+                        })(start, that);
+                    }
+                })(round, this);
+                
             }
+            
         },
         playVideo: function() {
+            console.log( "play video is called" );
             if(this.playing != 1) {
                 this.playing = 1;
                 this.currentTime = new Date().getTime();
@@ -298,7 +325,7 @@ export default {
                         // 序列增加
 
                         // 如果超过最大限制
-                        if (index <= that.indexRange[1]) {
+                        if (index <= that.indexRange[1] + 200) {
                             setTimeout(step, that.debug ? 1000 : 100);
                         } else {
                             that.barrage.pause();
@@ -317,52 +344,52 @@ export default {
         },
         // mask, 事先加载到序列数组里
         loadMask: function() {
-            for(var start = this.indexRange[0]; start <= this.indexRange[1]; start++) {
-                var that = this;
-                (function (index, that) {
-                    var img = document.createElement("img");
-                    img.height = 450;
-                    img.width = 880;
-                    img.crossOrigin = "";
-                    img.onload=function() {
-                        that.maskSequence.length++;
-                        that.maskSequence[index] = this;
-                        if(index === that.indexRange[1]) {
-                            that.finishLoadMask = true;
-                            that.getVideoFrame();
-                            that.computeFrameMask();
-                            if(that.finishLoadFrame && that.playing != 1) {
-                                that.playVideo();
+            for (var round = 0; round <= 4; round++) {
+                (function(round, this_) {
+                    for(var start = this_.indexRange[0]; start <= this_.indexRange[1]; start++) {
+                        var that = this_;
+                        (function (index, that) {
+                            var img = document.createElement("img");
+                            img.height = 450;
+                            img.width = 880;
+                            img.crossOrigin = "";
+                            img.onload=function() {
+                                that.maskSequence.length++;
+                                that.maskSequence[index + round * 50] = this;
+                                if(index + round * 50 === that.maxLength - 1) {
+                                    console.log("finishLoadMask")
+                                    that.finishLoadMask = true;
+                                    that.getVideoFrame();
+                                    that.computeFrameMask();
+                                    if(that.finishLoadFrame && that.playing != 1) {
+                                        that.playVideo();
+                                    }
+                                }
+                            };
+                            img.onerror = function() {
+                                that.maskSequence.length++;
+                                that.maskSequence[index + round * 50] = this;
+                                if(index + round * 50 === that.maxLength - 1) {
+                                    console.log("finishLoadMask")
+                                    that.finishLoadMask = true;
+                                    that.getVideoFrame();
+                                    that.computeFrameMask();
+                                    if(that.finishLoadFrame && that.playing != 1) {
+                                        that.playVideo();
+                                    }
+                                }
+                            };
+                            if(start < 10) {
+                                img.src = "http://172.18.167.9:9000/get_video_mask/" + that.videoName + "_0000" + index + ".png";
+                            } else {
+                                img.src = "http://172.18.167.9:9000/get_video_mask/" + that.videoName + "_000" + index + ".png";
                             }
-
-                        }
-
-                        // that.playMask();
-                    };
-                    img.onerror = function() {
-                        that.maskSequence.length++;
-                        that.maskSequence[index] = this;
-                        // that.playMask();
-                    };
-                    if(start < 10) {
-                        img.src = "http://172.18.167.9:9000/get_video_mask/" + that.videoName + "_0000" + index + ".png";
-                    } else {
-                        img.src = "http://172.18.167.9:9000/get_video_mask/" + that.videoName + "_000" + index + ".png";
+                            
+                        })(start, that);
                     }
-
-                })(start, that);
+                })(round, this);
+                
             }
-        },
-        // interact with backend
-        // TODO: 从后端加载图像列表
-        created: async function () {
-            // let res = await get('/list_images');
-            // let form = res.data.data;
-            // form.forEach((item)=>{
-            //     let temp = item.split('/');
-            //     let name = temp[temp.length-1];
-            //     this.imgList.push({name:name, url:item});
-            // })
         },
         handlePreview(file) {
             // 处理异常
@@ -375,8 +402,10 @@ export default {
                 this.finishLoadFrame = false;
                 this.finishLoadMask = false;
                 this.showLoadingBar = true;
-                this.barrage.pause();
-                this.barrage.goto(0);
+                this.barrage.pause(); 
+                this.barrage.goto(0); 
+                this.barrage.setData([]);
+                this.barrage.setData(data);
                 // 清除弹幕
                 // 更新图片
                 this.first = true;

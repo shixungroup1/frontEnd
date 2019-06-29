@@ -1,14 +1,15 @@
 <template>
     <div>
-        <el-dropdown>
-            <el-button type="primary">
-                {{ option }}<i class="el-icon-arrow-down el-icon--right"></i>
+        <!-- <el-dropdown> -->
+        <div class="#button-container">
+            <el-button type="" id="imageButton" @click.native="changeOption('image')">
+                image
             </el-button>
-            <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item @click.native="changeOption('video')">Video</el-dropdown-item>
-                <el-dropdown-item @click.native="changeOption('image')">Image</el-dropdown-item>
-            </el-dropdown-menu>
-        </el-dropdown>
+        
+            <el-button type="primary" id="videoButton" @click.native="changeOption('video')">
+                video
+            </el-button>
+        </div>
         <component :is="optionID"></component>
     </div>
 </template>
@@ -41,4 +42,18 @@ export default {
 </script>
 
 <style scoped>
+.button-container {
+    height: auto;
+}
+#videoButton {
+    position: relative;
+    margin: 10px;
+    float: left;
+}
+
+#imageButton {
+    position: relative;
+    float: right;
+    margin: 10px;
+}
 </style>
