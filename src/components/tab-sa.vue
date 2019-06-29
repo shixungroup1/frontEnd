@@ -88,10 +88,26 @@
                 })
             },
             async addUrl() {
-                let data={url:this.inputUrl};
+                let data={url: this.inputUrl};
+                const loading = this.$loading({
+                    lock: true,
+                    text: 'Loading',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                });
+
                 let res = await post("/upload_image", data);
                 console.log(res);
-                this.fileList.push(data);
+
+                loading.close();
+
+                if(res.data.error){
+                    this.$message.error('上传失败');
+                } else {
+                    this.$message.success('上传成功');
+                    this.fileList.push(data);
+                }
+
             }
         }
 

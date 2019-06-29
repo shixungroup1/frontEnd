@@ -20,7 +20,7 @@
         <!-- 发送弹幕模块 -->
         <div class="sending">
             <div class="inputFrame">
-                <el-input v-model="input" placeholder="请输入内容"></el-input>
+                <el-input v-model="input" placeholder="请输入内容" @keyup.enter.native="sendBarrage"></el-input>
             </div>
             <div class="buttonFrame">
                 <el-button type="primary" round @click="sendBarrage">发送</el-button>
