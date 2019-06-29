@@ -48,12 +48,12 @@ export default {
 #videoButton {
     position: relative;
     margin: 10px;
-    float: left;
+    float: right;
 }
 
 #imageButton {
     position: relative;
-    float: right;
+    float: left;
     margin: 10px;
 }
 </style>

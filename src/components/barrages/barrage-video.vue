@@ -70,11 +70,7 @@ export default {
             debug: false,
             showLoadingBar: true,
             // video list
-            videoList: [/*{
-                    name: "bear",
-                    origin: "",
-                    url:  "http://172.18.167.9:9000/get_video_frame/bear_00000.jpg"
-                },*/ {
+            videoList: [{
                     name: "blackswan",
                     origin: "",
                     url:  "http://172.18.167.9:9000/get_video_frame/blackswan_00000.jpg"
@@ -84,6 +80,15 @@ export default {
                 }, {
                     name: "camel",
                     url:  "http://172.18.167.9:9000/get_video_frame/camel_00000.jpg"
+                },{
+                    name: "breakdance",
+                    url:  "http://172.18.167.9:9000/get_video_frame/breakdance_00000.jpg"
+                },{
+                    name: "car-roundabout",
+                    url:  "http://172.18.167.9:9000/get_video_frame/car-roundabout_00000.jpg"
+                },{
+                    name: "dance-twirl",
+                    url:  "http://172.18.167.9:9000/get_video_frame/dance-twirl_00000.jpg"
                 } /*,{
                     name: "bmx-bumps",
                     url:  "http://172.18.167.9:9000/get_video_frame/bmx-bumps_00000.jpg"

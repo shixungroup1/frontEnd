@@ -106,7 +106,7 @@ export default {
     mounted() {
         // 处理时间，用于控制弹幕播放进度
         this.time = new Date();
-        this.currentTime = this.time.getTime();
+        // this.currentTime = this.time.getTime();
         // 初始化默认图片
         this.currentImg = "";
         this.currentMask = "";
@@ -126,7 +126,7 @@ export default {
            //  this.$refs.sendingFrame.style.width = this.oriImg.width +'px';
             // console.log("container的宽和高 " + this.container.style.height + " " + this.container.style.width)
             // 设置弹幕
-            this.barrage = new Barrage({container: this.container});
+            this.barrage = new Barrage({container: this.container, avoidOverlap: false});
 
             // 装载弹幕数据
             this.barrage.setData(data);
@@ -134,6 +134,8 @@ export default {
             this.getImages();
             this.computeImgMask();
             this.barrage.play();
+            //console.log("第一次播放弹幕");
+        //this.currentTime = this.time.getTime();
         },
         // 获取图像
         getImages: function() {
@@ -178,11 +180,11 @@ export default {
         // 发送弹幕
         sendBarrage: function() {
             this.time = new Date();
-            console.log("time " );
-            console.log(1000 * (Math.random()) );
+            console.log("duration " );
+            // console.log(1000 * (Math.random()) );
             console.log((this.time.getTime() - this.currentTime)/10);
             const success = this.barrage.add({
-                time: this.time.getTime() - this.currentTime - 2000, // 弹幕出现的时间(单位：毫秒)
+                time: this.time.getTime() - this.currentTime, // 弹幕出现的时间(单位：毫秒)
                 text: this.input,
                 fontSize: 32,
                 color: '#ff0000'
@@ -223,17 +225,21 @@ export default {
             console.log(res)
         },
         handlePreview(file) {
-            // 清除弹幕
+            
             // 更新图片
             this.currentImg=file.url;
             file.maskUrl = "http://172.18.167.9:9000/process_barrage/"+file.name;
             console.log(file.maskUrl);
             this.$refs.mask.crossOrigin = '';
             this.currentMask = file.maskUrl;
+            // this.currentTime = this.time.getTime();
             // console.log(this.currentMask);
+            this.time = new Date();
+            this.currentTime = this.time.getTime();
+            // 清除弹幕
             if(this.barrage !== undefined) {
                 this.barrage.setData([]);
-
+                
             }
             // this.loadImage();
 
