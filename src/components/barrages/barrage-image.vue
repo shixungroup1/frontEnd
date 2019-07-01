@@ -41,7 +41,7 @@
                 action="http://172.18.167.9:9000/upload_image"
                 :on-preview="handlePreview"
                 :on-remove="handleRemove"
-                :file-list="imgList"
+                :file-list="fileList"
                 :on-success="handleSuccess"
                 list-type="picture-card"
                 :auto-upload="true">
@@ -66,6 +66,9 @@ import list from '../list';
 
 export default {
     name: "tabBarrage",
+    props: {
+        fileList: Array
+    },
     data() {
         return {
             container: null,
@@ -79,13 +82,6 @@ export default {
             currentTime: null,
             time: null,
             url: "",
-            // 选择图片相关
-            imgList: [
-                // {
-                    // name: 'bird.png',
-                    // url: require('./origin.jpg')
-                // }
-            ],
             currentImg: "",
             currentMask: "../../../public/Masks/mask.png",
             url1:"",
@@ -95,13 +91,13 @@ export default {
     },
     // 从后端加载图像列表
     created: async function () {
-        let res = await get('/list_images');
-        let form = res.data.data;
-        form.forEach((item)=>{
-            let temp = item.split('/');
-            let name = temp[temp.length-1];
-            this.imgList.push({name:name, url:item});
-        })
+        // let res = await get('/list_images');
+        // let form = res.data.data;
+        // form.forEach((item)=>{
+        //     let temp = item.split('/');
+        //     let name = temp[temp.length-1];
+        //     this.fileList.push({name:name, url:item});
+        // })
     },
     mounted() {
         // 处理时间，用于控制弹幕播放进度
@@ -111,6 +107,7 @@ export default {
         this.currentImg = "";
         this.currentMask = "";
         this.container = this.$refs.container;
+        console.log("change barrage - image" + this.fileList);
     },
     methods: {
         loadImage: function () {
@@ -214,15 +211,17 @@ export default {
         },
         handleSuccess(response, file, fileList) {
             console.log(response);
+            this.$emit('update', fileList);
         },
         submitUpload() {
             this.$refs.upload.submit();
         },
-        async handleRemove(file, imgList) {
+        async handleRemove(file, fileList) {
             let temp=file.url.split('/');
             let name=temp[temp.length-1];
             let res = await del('/delete/'+name);
             console.log(res)
+            this.$emit('update', fileList);
         },
         handlePreview(file) {
             
@@ -252,7 +251,7 @@ export default {
             let res = await post("/upload_image", data);
 
             console.log(res);
-            this.imgList.push(data);
+            this.fileList.push(data);
         }
 
     }

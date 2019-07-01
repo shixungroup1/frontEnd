@@ -22,7 +22,7 @@
             </el-tab-pane>
 
             <el-tab-pane label="弹幕">
-                <tab-barrage class="page"/>
+                <tab-barrage class="page" :file-list="fileList" @update="handleUpdate"/>
             </el-tab-pane>
         </el-tabs>
 
@@ -54,7 +54,7 @@
                 let name = temp[temp.length-1];
                 this.fileList.push({name:name, url:item});
             });
-            console.log(this.fileList)
+            // console.log(this.fileList)
         },
         components: {
             "tab-bokeh": tabBokeh,

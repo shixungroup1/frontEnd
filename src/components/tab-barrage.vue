@@ -2,7 +2,7 @@
     <div>
         <!-- <el-dropdown> -->
         <div class="#button-container">
-            <el-button type="" id="imageButton" @click.native="changeOption('image')">
+            <el-button type="primary" id="imageButton" @click.native="changeOption('image')">
                 image
             </el-button>
         
@@ -10,7 +10,7 @@
                 video
             </el-button>
         </div>
-        <component :is="optionID"></component>
+        <component :is="optionID" :file-list="fileList" @update="handleUpdate"></component>
     </div>
 </template>
 
@@ -19,6 +19,9 @@ import videoBarrage from './barrages/barrage-video.vue';
 import imageBarrage from './barrages/barrage-image.vue';
 export default {
     name: "tabBarrage",
+    props: {
+        fileList: Array
+    },
     data() {
         return {
             option: "image"
@@ -35,7 +38,11 @@ export default {
     },
     methods: {
         changeOption: function(choice) {
-            this.option = choice
+            this.option = choice;
+            console.log("change option" + this.fileList);
+        },
+        handleUpdate(fileList) {
+            this.fileList = fileList
         }
     }
 }

@@ -109,7 +109,7 @@ export default {
             time: null,
             currentTime: null,
             playing: -1, // init
-            roundNum: 2
+            roundNum: 5
         }
     },
     mounted() {
@@ -481,6 +481,9 @@ export default {
 </script>
 
 <style scoped>
+h2 {
+    text-align: center;
+}
 html, body {
   font: 14px/18px Helvetica, Arial, 'Microsoft Yahei', Verdana, sans-serif;
   width: 100%;
