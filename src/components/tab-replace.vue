@@ -17,10 +17,13 @@
                     </div>
                 </el-image>
             </div>
-            <el-image :src="url1" class="img" :fit="fitMethod">
+            <el-image :src="url1" class="img" :fit="fitMethod" v-loading="loading"
+                      element-loading-text="后台处理中..."
+                      element-loading-spinner="el-icon-loading"
+                      element-loading-background="rgba(0, 0, 0, 0.8)" @load="handleLoad">
                 <div slot="error">
                     <div class="im-slot">
-                        <span>后台处理中...</span>
+                        <span>这里将会显示处理完成的图片</span>
                     </div>
                 </div>
             </el-image>
@@ -69,9 +72,11 @@
     import {get, post, del} from '../libs/http';
     export default {
         name: "tab-replace",
+        props: {
+            fileList: Array
+        },
         data() {
             return{
-                fileList: [],
                 fileList1: [],
                 baseUrl: 'http://172.18.167.9:9000',
                 foreUrl: "",
@@ -79,35 +84,31 @@
                 url1:"",
                 fitMethod: 'contain',
                 inputUrl: '',
-                inputUrl1: ''
+                inputUrl1: '',
+                loading: false
             }
 
         },
         created: async function () {
-            let res = await get('/list_images');
+            let res = await get('/list_background');
             let form = res.data.data;
             form.forEach((item)=>{
                 let temp = item.split('/');
                 let name = temp[temp.length-1];
-                this.fileList.push({name:name, url:item});
-            });
-
-            let res1 = await get('/list_background');
-            let form1 = res1.data.data;
-            form1.forEach((item)=>{
-                let temp = item.split('/');
-                let name = temp[temp.length-1];
                 this.fileList1.push({name:name, url:item});
             })
-
         },
         methods: {
             async getImage() {
+                this.loading=true;
                 this.url1="";
                 let temp=this.foreUrl.split('/');
                 let name=temp[temp.length-1];
                 console.log(name,"fore name")
                 this.url1=this.baseUrl+"/process_replace/"+name+"?t=" + Math.random();
+            },
+            handleLoad() {
+                this.loading=false;
             },
             submitUpload() {
                 this.$refs.upload.submit();
@@ -115,7 +116,9 @@
             async handleRemove(file, fileList) {
                 let temp=file.url.split('/');
                 let name=temp[temp.length-1];
-                await del('/delete/'+name);
+                let res = await del('/delete/'+name);
+                console.log(res)
+                this.$emit('update', fileList)
             },
             async handleRemove1(file, fileList) {
                 let temp=file.url.split('/');
@@ -141,24 +144,43 @@
 
             },
             handleSuccess(response, file, fileList) {
-                this.fileList.forEach(item=>{
+                fileList.forEach(item=>{
                     if(item.uid===file.uid){
                         item.url=this.baseUrl+'/get_image/'+response.name;
                     }
-                })
+                });
+                this.$emit('update', fileList);
             },
-            handleSuccess1(response, file, fileList) {
-                this.fileList1.forEach(item=>{
+            handleSuccess1(response, file, fileList1) {
+                fileList1.forEach(item=>{
                     if(item.uid===file.uid){
-                        item.url=this.baseUrl+'/get_image/'+response.name;
+                        item.url=this.baseUrl+'/get_background/'+response.name;
                     }
                 })
+                console.log(fileList1)
             },
             async addUrl() {
-                let data={url:this.inputUrl};
+                let data={url: this.inputUrl};
+                const loading = this.$loading({
+                    lock: true,
+                    text: '上传中...',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                });
+
                 let res = await post("/upload_image", data);
-                console.log(res);
-                this.fileList.push(data);
+
+                loading.close();
+
+                if(res.data.error){
+                    console.log(res.data)
+                    this.$message.error('上传失败');
+                } else {
+                    this.$message.success('上传成功');
+                    data.url = this.baseUrl + '/get_image/' + res.data.name;
+                    this.fileList.push(data);
+                }
+
             },
             async addUrl1() {
                 let data={url:this.inputUrl};
@@ -178,7 +200,7 @@
                     this.$message.error('上传失败');
                 } else {
                     this.$message.success('上传成功');
-                    this.fileList.push(data);
+                    this.fileList1.push(data);
                 }
             }
         }
@@ -188,13 +210,13 @@
 <style scoped>
     .img {
         width: 600px;
-        height: 402px;
+        height: 352px;
         overflow: hidden;
         margin: 10px 10px;
     }
     .im-slot {
         text-align: center;
-        line-height: 400px;
+        line-height: 350px;
         border: 1px dashed #c0ccda;
         border-radius: 6px;
     }

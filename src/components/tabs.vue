@@ -2,23 +2,23 @@
     <div>
         <el-tabs v-model="currentTab" :tab-position="tabPosition" class="page">
             <el-tab-pane label="分析结果">
-                <tab-sa class="page"/>
+                <tab-sa class="page" :file-list="fileList" @update="handleUpdate"/>
             </el-tab-pane>
 
             <el-tab-pane label="抠图">
-                <tab-cutout class="page"/>
+                <tab-cutout class="page" :file-list="fileList" @update="handleUpdate"/>
             </el-tab-pane>
 
             <el-tab-pane label="虚化">
-                <tab-bokeh class="page"/>
+                <tab-bokeh class="page" :file-list="fileList" @update="handleUpdate"/>
             </el-tab-pane>
 
             <el-tab-pane label="色彩">
-                <tab-color class="page"/>
+                <tab-splash class="page" :file-list="fileList" @update="handleUpdate"/>
             </el-tab-pane>
 
             <el-tab-pane label="背景替换">
-                <tab-replace class="page"/>
+                <tab-replace class="page" :file-list="fileList" @update="handleUpdate"/>
             </el-tab-pane>
 
             <el-tab-pane label="弹幕">
@@ -34,7 +34,7 @@
     import tabBarrage from './tab-barrage.vue'
     import tabSA from './tab-sa.vue'
     import tabReplace from './tab-replace'
-    import tabColor from './tab-color'
+    import tabSplash from './tab-splash'
     import {get, post, del} from '../libs/http';
 
     export default {
@@ -43,31 +43,7 @@
             return {
                 currentTab: "0",
                 tabPosition: 'top',
-                fileList: [],
-                tabs: [
-                    {
-                        id: 4,
-                        name: "sa",
-                        label: "显著性分析",
-                        isActive: false
-                    },
-                    {
-                        id: 0,
-                        name: "bokeh",
-                        label: "背景虚化",
-                        isActive: true
-                    }, {
-                        id: 1,
-                        name: "cutout",
-                        label: "抠图",
-                        isActive: false
-                    }, {
-                        id: 2,
-                        name: "barrage",
-                        label: "弹幕",
-                        isActive: false
-                    }
-                ]
+                fileList: []
             };
         },
         created: async function () {
@@ -77,12 +53,8 @@
                 let temp = item.split('/');
                 let name = temp[temp.length-1];
                 this.fileList.push({name:name, url:item});
-            })
-        },
-        computed: {
-            currentTabComponent: function () {
-                return 'tab-' + this.tabs[this.currentTab].name.toLowerCase()
-            }
+            });
+            console.log(this.fileList)
         },
         components: {
             "tab-bokeh": tabBokeh,
@@ -90,7 +62,12 @@
             "tab-barrage": tabBarrage,
             "tab-sa": tabSA,
             "tab-replace": tabReplace,
-            "tab-color": tabColor
+            "tab-splash": tabSplash
+        },
+        methods: {
+            handleUpdate(fileList) {
+                this.fileList = fileList
+            }
         }
     };
 

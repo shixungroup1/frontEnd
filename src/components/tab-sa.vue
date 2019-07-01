@@ -44,9 +44,11 @@
     import {get, post, del} from '../libs/http';
     export default {
         name: "tabSA",
+        props: {
+            fileList: Array
+        },
         data() {
             return{
-                fileList: [],
                 baseUrl: 'http://172.18.167.9:9000',
                 loading: false,
                 url: "",
@@ -55,15 +57,6 @@
                 inputUrl: ''
             }
 
-        },
-        created: async function () {
-            let res = await get('/list_images');
-            let form = res.data.data;
-            form.forEach((item)=>{
-                let temp = item.split('/');
-                let name = temp[temp.length-1];
-                this.fileList.push({name:name, url:item});
-            })
         },
         methods: {
             async getImage() {
@@ -81,6 +74,7 @@
                 let name=temp[temp.length-1];
                 let res = await del('/delete/'+name);
                 console.log(res)
+                this.$emit('update', fileList)
             },
             handlePreview(file) {
                 console.log("preview", file);
@@ -92,7 +86,8 @@
                     if(item.uid===file.uid){
                         item.url=this.baseUrl+'/get_image/'+response.name;
                     }
-                })
+                });
+                this.$emit('update', fileList)
             },
             async addUrl() {
                 let data={url: this.inputUrl};
@@ -108,6 +103,7 @@
                 loading.close();
 
                 if(res.data.error){
+                    console.log(res.data)
                     this.$message.error('上传失败');
                 } else {
                     this.$message.success('上传成功');
