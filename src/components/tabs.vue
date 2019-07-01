@@ -1,8 +1,6 @@
 <template>
     <div>
         <el-tabs v-model="currentTab" :tab-position="tabPosition" class="page">
-            <!-- <el-tab-pane v-for="tab in tabs" :key="tab.id" :label="tab.label">
-            </el-tab-pane> -->
             <el-tab-pane label="分析结果">
                 <tab-sa class="page"/>
             </el-tab-pane>
@@ -22,6 +20,7 @@
             <el-tab-pane label="背景替换">
                 <tab-replace class="page"/>
             </el-tab-pane>
+
             <el-tab-pane label="弹幕">
                 <tab-barrage class="page"/>
             </el-tab-pane>
@@ -36,6 +35,7 @@
     import tabSA from './tab-sa.vue'
     import tabReplace from './tab-replace'
     import tabColor from './tab-color'
+    import {get, post, del} from '../libs/http';
 
     export default {
         name: "tabs",
@@ -43,6 +43,7 @@
             return {
                 currentTab: "0",
                 tabPosition: 'top',
+                fileList: [],
                 tabs: [
                     {
                         id: 4,
@@ -68,6 +69,15 @@
                     }
                 ]
             };
+        },
+        created: async function () {
+            let res = await get('/list_images');
+            let form = res.data.data;
+            form.forEach((item)=>{
+                let temp = item.split('/');
+                let name = temp[temp.length-1];
+                this.fileList.push({name:name, url:item});
+            })
         },
         computed: {
             currentTabComponent: function () {

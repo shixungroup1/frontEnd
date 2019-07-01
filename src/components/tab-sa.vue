@@ -9,10 +9,13 @@
 
                 </div>
             </el-image>
-            <el-image :src="url1" class="img" :fit="fitMethod">
+            <el-image :src="url1" class="img" :fit="fitMethod" v-loading="loading"
+                      element-loading-text="后台处理中..."
+                      element-loading-spinner="el-icon-loading"
+                      element-loading-background="rgba(0, 0, 0, 0.8)" @load="handleLoad">
                 <div slot="error">
                     <div class="im-slot">
-                        <span>后台处理中...</span>
+                        <span>这里将会显示处理完成的图片</span>
                     </div>
                 </div>
             </el-image>
@@ -45,6 +48,7 @@
             return{
                 fileList: [],
                 baseUrl: 'http://172.18.167.9:9000',
+                loading: false,
                 url: "",
                 url1:"",
                 fitMethod: 'contain',
@@ -60,14 +64,17 @@
                 let name = temp[temp.length-1];
                 this.fileList.push({name:name, url:item});
             })
-
         },
         methods: {
             async getImage() {
+                this.loading=true;
                 this.url1="";
                 let temp=this.url.split('/');
                 let name=temp[temp.length-1];
                 this.url1=this.baseUrl+"/process_sa/"+name;
+            },
+            handleLoad() {
+                this.loading=false;
             },
             async handleRemove(file, fileList) {
                 let temp=file.url.split('/');
@@ -81,7 +88,7 @@
                 this.getImage();
             },
             handleSuccess(response, file, fileList) {
-                this.fileList.forEach(item=>{
+                fileList.forEach(item=>{
                     if(item.uid===file.uid){
                         item.url=this.baseUrl+'/get_image/'+response.name;
                     }
@@ -91,13 +98,12 @@
                 let data={url: this.inputUrl};
                 const loading = this.$loading({
                     lock: true,
-                    text: 'Loading',
+                    text: '上传中...',
                     spinner: 'el-icon-loading',
                     background: 'rgba(0, 0, 0, 0.7)'
                 });
 
                 let res = await post("/upload_image", data);
-                console.log(res);
 
                 loading.close();
 
@@ -105,6 +111,7 @@
                     this.$message.error('上传失败');
                 } else {
                     this.$message.success('上传成功');
+                    data.url = this.baseUrl + '/get_image/' + res.data.name;
                     this.fileList.push(data);
                 }
 
